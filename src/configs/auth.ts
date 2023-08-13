@@ -1,14 +1,16 @@
 import { db } from './db'
-import { NextAuthOptions } from 'next-auth'
+import { env } from '@environment/env.mjs'
 import { PrismaAdapter } from '@auth/prisma-adapter'
+import { type GetServerSidePropsContext } from 'next'
 import GithubProvider from 'next-auth/providers/github'
+import { NextAuthOptions, getServerSession } from 'next-auth'
 
 export const authOptions: NextAuthOptions = {
 	adapter: PrismaAdapter(db) as NextAuthOptions['adapter'],
 	providers: [
 		GithubProvider({
-			clientId: process.env.GITHUB_CLIENT_ID as string,
-			clientSecret: process.env.GITHUB_CLIENT_SECRET as string
+			clientId: env.GITHUB_CLIENT_ID,
+			clientSecret: env.GITHUB_CLIENT_SECRET
 		})
 	],
 	callbacks: {
@@ -52,5 +54,12 @@ export const authOptions: NextAuthOptions = {
 	session: {
 		strategy: 'jwt'
 	},
-	secret: process.env.NEXTAUTH_SECRET as string
+	secret: env.NEXTAUTH_SECRET
+}
+
+export const getServerAuthSession = (ctx: {
+	req: GetServerSidePropsContext['req']
+	res: GetServerSidePropsContext['res']
+}) => {
+	return getServerSession(ctx.req, ctx.res, authOptions)
 }

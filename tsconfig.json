@@ -23,7 +23,8 @@
 			"@/*": ["./src/*"],
 			"@configs/*": ["./src/configs/*"],
 			"@context/*": ["./src/context/*"],
-			"@provider/*": ["./src/provider/*"]
+			"@provider/*": ["./src/provider/*"],
+			"@environment/*": ["./src/environment/*"]
 		}
 	},
 	"exclude": ["node_modules", ".next"],

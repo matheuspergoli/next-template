@@ -1,8 +1,8 @@
-import type { User } from 'next-auth'
+import type { DefaultSession } from 'next-auth'
 
 declare module 'next-auth' {
-	interface Session {
-		user: User & {
+	interface Session extends DefaultSession {
+		user: DefaultSession['user'] & {
 			id: string
 			role: string
 			name: string
