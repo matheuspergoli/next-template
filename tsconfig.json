@@ -20,9 +20,12 @@
 			}
 		],
 		"paths": {
-			"@/*": ["./src/*"]
+			"@/*": ["./src/*"],
+			"@configs/*": ["./src/configs/*"],
+			"@context/*": ["./src/context/*"],
+			"@provider/*": ["./src/provider/*"]
 		}
 	},
-	"exclude": ["node_modules"],
+	"exclude": ["node_modules", ".next"],
 	"include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"]
 }
