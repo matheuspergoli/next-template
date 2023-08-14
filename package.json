@@ -20,6 +20,7 @@
 		"zod": "^3.21.4"
 	},
 	"devDependencies": {
+		"@total-typescript/ts-reset": "^0.4.2",
 		"@types/node": "^20.4.10",
 		"@types/react": "^18.2.20",
 		"@types/react-dom": "^18.2.7",
