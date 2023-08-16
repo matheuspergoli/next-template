@@ -1,4 +1,4 @@
-import { db } from './db'
+import { prisma } from '@libs/prisma'
 import { env } from '@environment/env.mjs'
 import { PrismaAdapter } from '@auth/prisma-adapter'
 import { type GetServerSidePropsContext } from 'next'
@@ -6,7 +6,7 @@ import GithubProvider from 'next-auth/providers/github'
 import { NextAuthOptions, getServerSession } from 'next-auth'
 
 export const authOptions: NextAuthOptions = {
-	adapter: PrismaAdapter(db) as NextAuthOptions['adapter'],
+	adapter: PrismaAdapter(prisma) as NextAuthOptions['adapter'],
 	providers: [
 		GithubProvider({
 			clientId: env.GITHUB_CLIENT_ID,
@@ -26,7 +26,7 @@ export const authOptions: NextAuthOptions = {
 			return session
 		},
 		async jwt({ token, user }) {
-			const dbUser = await db.user.findFirst({
+			const dbUser = await prisma.user.findFirst({
 				where: {
 					email: token.email
 				}
@@ -57,7 +57,7 @@ export const authOptions: NextAuthOptions = {
 	secret: env.NEXTAUTH_SECRET
 }
 
-export const getServerAuthSession = (ctx: {
+export const getSession = (ctx: {
 	req: GetServerSidePropsContext['req']
 	res: GetServerSidePropsContext['res']
 }) => {

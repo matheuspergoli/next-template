@@ -1,7 +1,7 @@
-import { stackMiddleware } from './middlewares/stackMiddleware'
+import { stackMiddleware } from '@/middlewares/stackMiddleware'
 
-import { withLogging } from './middlewares/withLogging'
-import { withAuthorization } from './middlewares/withAuthorization'
+import { withLogging } from '@/middlewares/withLogging'
+import { withAuthorization } from '@/middlewares/withAuthorization'
 
 export default stackMiddleware([withLogging, withAuthorization])
 

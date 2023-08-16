@@ -22,7 +22,7 @@
 		],
 		"paths": {
 			"@/*": ["./src/*"],
-			"@configs/*": ["./src/configs/*"],
+			"@libs/*": ["./src/libs/*"],
 			"@context/*": ["./src/context/*"],
 			"@provider/*": ["./src/provider/*"],
 			"@environment/*": ["./src/environment/*"]
