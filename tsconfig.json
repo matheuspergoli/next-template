@@ -23,6 +23,7 @@
 		"paths": {
 			"@/*": ["./src/*"],
 			"@libs/*": ["./src/libs/*"],
+			"@shared/*": ["./src/shared/*"],
 			"@context/*": ["./src/context/*"],
 			"@provider/*": ["./src/provider/*"],
 			"@environment/*": ["./src/environment/*"]

@@ -6,5 +6,5 @@ import { withAuthorization } from '@/middlewares/withAuthorization'
 export default stackMiddleware([withLogging, withAuthorization])
 
 export const config = {
-	matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)']
+	matcher: ['/((?!api|_next/static|_next/image|images|favicon.ico).*)']
 }

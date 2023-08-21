@@ -1,7 +1,6 @@
 import { prisma } from '@libs/prisma'
 import { env } from '@environment/env.mjs'
 import { PrismaAdapter } from '@auth/prisma-adapter'
-import { type GetServerSidePropsContext } from 'next'
 import GithubProvider from 'next-auth/providers/github'
 import { NextAuthOptions, getServerSession } from 'next-auth'
 
@@ -57,9 +56,6 @@ export const authOptions: NextAuthOptions = {
 	secret: env.NEXTAUTH_SECRET
 }
 
-export const getSession = (ctx: {
-	req: GetServerSidePropsContext['req']
-	res: GetServerSidePropsContext['res']
-}) => {
-	return getServerSession(ctx.req, ctx.res, authOptions)
+export const getSession = () => {
+	return getServerSession(authOptions)
 }
