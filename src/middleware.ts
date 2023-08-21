@@ -1,9 +1,9 @@
-import { stackMiddleware } from '@/middlewares/stackMiddleware'
+import { StackMiddleware } from '@/middlewares/StackMiddleware'
 
-import { withLogging } from '@/middlewares/withLogging'
-import { withAuthorization } from '@/middlewares/withAuthorization'
+import { LoggingMiddleware } from '@/middlewares/LoggingMiddleware'
+import { AuthorizationMiddleware } from '@/middlewares/AuthorizationMiddleware'
 
-export default stackMiddleware([withLogging, withAuthorization])
+export default StackMiddleware([LoggingMiddleware, AuthorizationMiddleware])
 
 export const config = {
 	matcher: ['/((?!api|_next/static|_next/image|images|favicon.ico).*)']
