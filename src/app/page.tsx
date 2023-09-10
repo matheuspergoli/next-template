@@ -3,7 +3,7 @@
 import React from 'react'
 import { Button } from '@/shared/ui/button'
 import { placeholderBlurhash } from '@libs/utils'
-import { BlurImage } from '@shared/components/BlurImage'
+import { BlurImage } from '@/shared/components/blur-image'
 
 export default function Page() {
 	const [count, setCount] = React.useState(0)
@@ -21,15 +21,17 @@ export default function Page() {
 				</Button>
 			</section>
 
-			<BlurImage
-				width={500}
-				height={500}
-				alt='Blurhash'
-				src={'https://placehold.co/500x500/png?text=NextJS+13+App+Router&font=roboto'}
-				placeholder='blur'
-				blurDataURL={placeholderBlurhash}
-				className='mb-5 h-44 rounded-md object-cover'
-			/>
+			<figure className='h-44 w-full max-w-md overflow-hidden rounded-md'>
+				<BlurImage
+					width={500}
+					height={500}
+					alt='Blurhash'
+					src={'https://placehold.co/500x500/png?text=NextJS+13+App+Router&font=roboto'}
+					placeholder='blur'
+					blurDataURL={placeholderBlurhash}
+					className='h-full w-full rounded-md object-cover'
+				/>
+			</figure>
 		</main>
 	)
 }

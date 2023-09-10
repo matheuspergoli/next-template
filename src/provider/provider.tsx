@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { SessionProvider } from '@context/SessionProvider'
+import { SessionProvider } from '@context/session-provider'
 
 type ProviderType = ({ children }: { children: React.ReactNode }) => React.JSX.Element
 

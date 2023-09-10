@@ -1,7 +1,7 @@
-import { StackMiddleware } from '@/middlewares/StackMiddleware'
+import { StackMiddleware } from '@middlewares/stack-middleware'
 
-import { LoggingMiddleware } from '@/middlewares/LoggingMiddleware'
-import { AuthorizationMiddleware } from '@/middlewares/AuthorizationMiddleware'
+import { LoggingMiddleware } from '@middlewares/logging-middleware'
+import { AuthorizationMiddleware } from '@middlewares/authorization-middleware'
 
 export default StackMiddleware([LoggingMiddleware, AuthorizationMiddleware])
 

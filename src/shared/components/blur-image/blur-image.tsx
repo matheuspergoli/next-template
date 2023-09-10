@@ -18,7 +18,7 @@ export const BlurImage = (props: BlurImageProps) => {
 			alt={props.alt}
 			className={cn(
 				'duration-500 ease-in-out',
-				loading ? 'scale-105 blur-lg' : 'scale-100 blur-0',
+				loading ? 'scale-125 blur-lg' : 'scale-100 blur-0',
 				props.className
 			)}
 			onLoadingComplete={() => setLoading(false)}
