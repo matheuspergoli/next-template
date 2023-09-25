@@ -5,6 +5,7 @@
 	"scripts": {
 		"dev": "next dev",
 		"build": "prisma generate && prisma db push && next build",
+		"format": "prettier --write \"src/**/*.{ts,tsx}\"",
 		"start": "next start",
 		"lint": "next lint",
 		"postinstall": "prisma generate"
