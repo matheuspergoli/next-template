@@ -6,9 +6,25 @@ import { Loader2 } from 'lucide-react'
 import { signIn } from 'next-auth/react'
 import { Slot } from '@radix-ui/react-slot'
 import { ButtonProps, buttonVariants } from '@shared/ui/button'
+import { BuiltInProviderType } from 'next-auth/providers/index'
 
-export const SignInButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
-	({ className, variant, size, children, asChild = false, ...props }, ref) => {
+interface SignInButtonProps extends ButtonProps {
+	signInProvider?: BuiltInProviderType
+}
+
+export const SignInButton = React.forwardRef<HTMLButtonElement, SignInButtonProps>(
+	(
+		{
+			className,
+			variant,
+			size,
+			children,
+			asChild = false,
+			signInProvider = 'github',
+			...props
+		},
+		ref
+	) => {
 		const [loading, setLoading] = React.useState(false)
 
 		const Comp = asChild ? Slot : 'button'
@@ -17,7 +33,7 @@ export const SignInButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
 			<Comp
 				onClick={() => {
 					setLoading(true)
-					signIn('github', { callbackUrl: '/' })
+					signIn(signInProvider, { callbackUrl: '/' })
 				}}
 				className={cn(buttonVariants({ variant, size, className }))}
 				ref={ref}
