@@ -1,5 +1,3 @@
-import axios, { Axios, AxiosError, InternalAxiosRequestConfig } from 'axios'
-
 export type HttpStatusCode = 200 | 201 | 204 | 400 | 401 | 403 | 404 | 500
 
 export type HttpResult<T> =
@@ -7,95 +5,112 @@ export type HttpResult<T> =
 	| { success: false; status: HttpStatusCode; error: unknown }
 
 export class HttpHandler {
-	protected client: Axios
-
-	constructor(private readonly baseURL?: string) {
-		this.client = axios.create({
-			baseURL: this.baseURL?.endsWith('/') ? this.baseURL : `${this.baseURL}/`
-		})
-	}
-
-	public async get<T>(url: string, params?: never): Promise<HttpResult<T>> {
-		try {
-			const response = await this.client.get(url, params)
-			const status = this.convertToHttpStatusCode(response.status)
-			if (status !== undefined) {
-				return { success: true, data: response.data, status }
-			} else {
-				throw new Error(`Invalid status code: ${response.status}`)
-			}
-		} catch (error) {
-			return this.formatError(error)
-		}
-	}
-
-	public async post<T>(url: string, data?: object): Promise<HttpResult<T>> {
-		try {
-			const response = await this.client.post(url, data)
-			const status = this.convertToHttpStatusCode(response.status)
-			if (status !== undefined) {
-				return { success: true, data: response.data, status }
-			} else {
-				throw new Error(`Invalid status code: ${response.status}`)
-			}
-		} catch (error) {
-			return this.formatError(error)
-		}
-	}
-
-	public async put<T>(url: string, data?: object): Promise<HttpResult<T>> {
-		try {
-			const response = await this.client.put(url, data)
-			const status = this.convertToHttpStatusCode(response.status)
-			if (status !== undefined) {
-				return { success: true, data: response.data, status }
-			} else {
-				throw new Error(`Invalid status code: ${response.status}`)
-			}
-		} catch (error) {
-			return this.formatError(error)
-		}
-	}
-
-	public async delete<T>(url: string, params?: never): Promise<HttpResult<T>> {
-		try {
-			const response = await this.client.delete(url, params)
-			const status = this.convertToHttpStatusCode(response.status)
-			if (status !== undefined) {
-				return { success: true, data: response.data, status }
-			} else {
-				throw new Error(`Invalid status code: ${response.status}`)
-			}
-		} catch (error) {
-			return this.formatError(error)
-		}
-	}
-
-	public addInterceptor(
-		onFulfilled?: (
-			config: InternalAxiosRequestConfig
-		) => InternalAxiosRequestConfig | Promise<InternalAxiosRequestConfig>,
-		onRejected?: (error: unknown) => unknown
+	constructor(
+		private readonly baseURL: string = '',
+		private readonly defaultTimeout: number = 5000,
+		private readonly defaultHeaders: HeadersInit = {}
 	) {
-		this.client.interceptors.request.use(onFulfilled, onRejected)
+		this.baseURL = new URL(baseURL).href
+	}
+
+	public async get<T>(url: string, params?: RequestInit): Promise<HttpResult<T>> {
+		return this.request<T>(url, 'GET', undefined, params)
+	}
+
+	public async post<T>(
+		url: string,
+		data: Record<string, unknown>,
+		params?: RequestInit
+	): Promise<HttpResult<T>> {
+		return this.request<T>(url, 'POST', data, params)
+	}
+
+	public async put<T>(
+		url: string,
+		data: Record<string, unknown>,
+		params?: RequestInit
+	): Promise<HttpResult<T>> {
+		return this.request<T>(url, 'PUT', data, params)
+	}
+
+	public async delete<T>(url: string, params?: RequestInit): Promise<HttpResult<T>> {
+		return this.request<T>(url, 'DELETE', undefined, params)
+	}
+
+	private async request<T>(
+		url: string,
+		method: string,
+		data?: Record<string, unknown>,
+		params?: RequestInit
+	): Promise<HttpResult<T>> {
+		try {
+			const response = await Promise.race([
+				fetch(this.baseURL + this.normalizeUrl(url), {
+					method,
+					body: data ? JSON.stringify(data) : undefined,
+					...params,
+					headers: this.getHeaders()
+				}),
+				new Promise<Response>((_, reject) => {
+					const timeout = setTimeout(() => {
+						clearTimeout(timeout)
+						reject(new Error('Request timeout'))
+					}, this.defaultTimeout)
+				})
+			])
+			return this.formatResponse(response)
+		} catch (error) {
+			return this.formatError(error)
+		}
+	}
+
+	private getHeaders(): HeadersInit {
+		return {
+			...this.defaultHeaders,
+			'Content-Type': 'application/json'
+		}
+	}
+
+	private normalizeUrl(url: string): string {
+		if (url.startsWith('/')) {
+			url = url.slice(1)
+		}
+		return url
 	}
 
 	protected convertToHttpStatusCode(status: number): HttpStatusCode | undefined {
 		const validStatusCodes: HttpStatusCode[] = [200, 201, 204, 400, 401, 403, 404, 500]
 		if (validStatusCodes.includes(status as HttpStatusCode)) {
 			return status as HttpStatusCode
+		} else {
+			throw new Error(`Código de status inválido: ${status}`)
 		}
 	}
 
 	protected formatError<T>(error: unknown): HttpResult<T> {
-		if (error instanceof AxiosError) {
-			const status = this.convertToHttpStatusCode(error.response?.status ?? 500)
+		if (error instanceof Error) {
+			const response = error as unknown as Response
+			const status = this.convertToHttpStatusCode(response?.status ?? 500)
 			if (status !== undefined) {
-				return { success: false, error: error, status }
+				return { success: false, error: response, status }
 			} else {
-				throw new Error(`Invalid status code: ${error.response?.status}`)
+				throw new Error(`Código de status inválido: ${response?.status}`)
 			}
 		}
-		return { success: false, error: error, status: 500 }
+		return { success: false, error: error as Error, status: 500 }
+	}
+
+	protected async formatResponse<T>(response: Response): Promise<HttpResult<T>> {
+		const status = this.convertToHttpStatusCode(response.status)
+		if (status !== undefined) {
+			try {
+				const data = (await response.json()) as T
+				return { success: true, data, status }
+			} catch (error) {
+				return { success: false, error, status: 500 }
+			}
+		} else {
+			throw new Error(`Código de status inválido: ${response.status}`)
+		}
 	}
 }
