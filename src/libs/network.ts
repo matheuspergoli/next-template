@@ -43,13 +43,15 @@ export class HttpHandler {
 		data?: Record<string, unknown>,
 		params?: RequestInit
 	): Promise<HttpResult<T>> {
+		const controller = new AbortController()
 		try {
 			const response = await Promise.race([
 				fetch(this.baseURL + this.normalizeUrl(url), {
 					method,
 					body: data ? JSON.stringify(data) : undefined,
 					...params,
-					headers: this.getHeaders()
+					headers: this.getHeaders(),
+					signal: controller.signal
 				}),
 				new Promise<Response>((_, reject) => {
 					const timeout = setTimeout(() => {
@@ -60,6 +62,7 @@ export class HttpHandler {
 			])
 			return this.formatResponse(response)
 		} catch (error) {
+			controller.abort()
 			return this.formatError(error)
 		}
 	}
