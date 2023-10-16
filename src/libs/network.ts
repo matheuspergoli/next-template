@@ -1,111 +1,63 @@
-export type HttpStatusCode = 200 | 201 | 204 | 400 | 401 | 403 | 404 | 500
+type HttpStatusCode = 200 | 201 | 204 | 400 | 401 | 403 | 404 | 429 | 500 | 503
 
-export type HttpResult<T> =
-	| { data: T; success: true; status: HttpStatusCode }
-	| { success: false; status: HttpStatusCode; error: unknown }
+interface HttpResultSuccess<T> {
+	data: T
+	success: true
+	status: HttpStatusCode
+}
 
-export class HttpHandler {
-	constructor(
-		private readonly baseURL: string = '',
-		private readonly defaultTimeout: number = 5000,
-		private readonly defaultHeaders: HeadersInit = {}
-	) {
-		this.baseURL = new URL(baseURL).href
-	}
+interface HttpResultError {
+	success: false
+	status: HttpStatusCode
+	error: unknown
+}
 
-	public async get<T>(url: string, params?: RequestInit): Promise<HttpResult<T>> {
-		return this.request<T>(url, 'GET', undefined, params)
-	}
+type HttpResult<T> = HttpResultSuccess<T> | HttpResultError
 
-	public async post<T>(
-		url: string,
-		data: Record<string, unknown>,
-		params?: RequestInit
-	): Promise<HttpResult<T>> {
-		return this.request<T>(url, 'POST', data, params)
-	}
+interface HttpHandlerOptions {
+	baseURL?: string
+	defaultTimeout?: number
+	defaultHeaders?: HeadersInit
+}
 
-	public async put<T>(
-		url: string,
-		data: Record<string, unknown>,
-		params?: RequestInit
-	): Promise<HttpResult<T>> {
-		return this.request<T>(url, 'PUT', data, params)
-	}
+export const createHttpHandler = (options: HttpHandlerOptions = {}) => {
+	const { baseURL = '', defaultTimeout = 5000, defaultHeaders = {} } = options
 
-	public async delete<T>(url: string, params?: RequestInit): Promise<HttpResult<T>> {
-		return this.request<T>(url, 'DELETE', undefined, params)
-	}
-
-	private async request<T>(
-		url: string,
-		method: string,
-		data?: Record<string, unknown>,
-		params?: RequestInit
-	): Promise<HttpResult<T>> {
-		const controller = new AbortController()
-		try {
-			const response = await Promise.race([
-				fetch(this.baseURL + this.normalizeUrl(url), {
-					method,
-					body: data ? JSON.stringify(data) : undefined,
-					...params,
-					headers: this.getHeaders(),
-					signal: controller.signal
-				}),
-				new Promise<Response>((_, reject) => {
-					const timeout = setTimeout(() => {
-						clearTimeout(timeout)
-						reject(new Error('Request timeout'))
-					}, this.defaultTimeout)
-				})
-			])
-			return this.formatResponse(response)
-		} catch (error) {
-			controller.abort()
-			return this.formatError(error)
-		}
-	}
-
-	private getHeaders(): HeadersInit {
-		return {
-			...this.defaultHeaders,
-			'Content-Type': 'application/json'
-		}
-	}
-
-	private normalizeUrl(url: string): string {
+	const normalizeUrl = (url: string): string => {
 		if (url.startsWith('/')) {
 			url = url.slice(1)
 		}
 		return url
 	}
 
-	protected convertToHttpStatusCode(status: number): HttpStatusCode | undefined {
-		const validStatusCodes: HttpStatusCode[] = [200, 201, 204, 400, 401, 403, 404, 500]
-		if (validStatusCodes.includes(status as HttpStatusCode)) {
+	const getDefaultHeaders = (): HeadersInit => ({
+		...defaultHeaders,
+		'Content-Type': 'application/json'
+	})
+
+	const convertToHttpStatusCode = (status: number): HttpStatusCode => {
+		const validStatusCodes: HttpStatusCode[] = [
+			200, 201, 204, 400, 401, 403, 404, 429, 500, 503
+		]
+		if (validStatusCodes.includes(status)) {
 			return status as HttpStatusCode
 		} else {
-			throw new Error(`Código de status inválido: ${status}`)
+			return 500
 		}
 	}
 
-	protected formatError<T>(error: unknown): HttpResult<T> {
-		if (error instanceof Error) {
-			const response = error as unknown as Response
-			const status = this.convertToHttpStatusCode(response?.status ?? 500)
-			if (status !== undefined) {
-				return { success: false, error: response, status }
-			} else {
-				throw new Error(`Código de status inválido: ${response?.status}`)
-			}
+	const formatError = <T>(error: Response): HttpResult<T> => {
+		const status = convertToHttpStatusCode(error.status)
+		if (status.toString().startsWith('4') || status.toString().startsWith('5')) {
+			return { success: false, error, status }
+		} else {
+			return { success: false, error, status: 500 }
 		}
-		return { success: false, error: error as Error, status: 500 }
 	}
 
-	protected async formatResponse<T>(response: Response): Promise<HttpResult<T>> {
-		const status = this.convertToHttpStatusCode(response.status)
-		if (status !== undefined) {
+	const formatResponse = async <T>(response: Response): Promise<HttpResult<T>> => {
+		const status = convertToHttpStatusCode(response.status)
+		if (status.toString().startsWith('2')) {
 			try {
 				const data = (await response.json()) as T
 				return { success: true, data, status }
@@ -113,7 +65,64 @@ export class HttpHandler {
 				return { success: false, error, status: 500 }
 			}
 		} else {
-			throw new Error(`Código de status inválido: ${response.status}`)
+			return formatError(response)
 		}
+	}
+
+	const request = async <T>(
+		url: string,
+		method: string,
+		data?: Record<string, unknown>,
+		params?: RequestInit
+	): Promise<HttpResult<T>> => {
+		const controller = new AbortController()
+		try {
+			const response = await Promise.race([
+				fetch(new URL(baseURL).href + normalizeUrl(url), {
+					method,
+					headers: getDefaultHeaders(),
+					body: data ? JSON.stringify(data) : undefined,
+					signal: controller.signal,
+					...params
+				}),
+				new Promise<Response>((_, reject) => {
+					const timeout = setTimeout(() => {
+						clearTimeout(timeout)
+						reject(new Error('Tempo de requisição excedido'))
+					}, defaultTimeout)
+				})
+			])
+			return formatResponse(response)
+		} catch (error) {
+			controller.abort()
+			if (error instanceof Response) {
+				return formatError(error)
+			} else {
+				return { success: false, error, status: 500 }
+			}
+		}
+	}
+
+	const get = <T>(url: string, params?: RequestInit) => {
+		return request<T>(url, 'GET', undefined, params)
+	}
+
+	const post = <T>(url: string, data?: Record<string, unknown>, params?: RequestInit) => {
+		return request<T>(url, 'POST', data, params)
+	}
+
+	const put = <T>(url: string, data?: Record<string, unknown>, params?: RequestInit) => {
+		return request<T>(url, 'PUT', data, params)
+	}
+
+	const del = <T>(url: string, data?: Record<string, unknown>, params?: RequestInit) => {
+		return request<T>(url, 'DELETE', data, params)
+	}
+
+	return {
+		get,
+		put,
+		post,
+		delete: del
 	}
 }
