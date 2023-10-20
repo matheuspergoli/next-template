@@ -1,11 +1,11 @@
 'use client'
 
 import React from 'react'
-import { cn } from '@libs/utils'
+import { cn } from '@/libs/utils'
 import { Loader2 } from 'lucide-react'
 import { signIn } from 'next-auth/react'
 import { Slot } from '@radix-ui/react-slot'
-import { ButtonProps, buttonVariants } from '@shared/ui/button'
+import { ButtonProps, buttonVariants } from '@/shared/ui/button'
 import { BuiltInProviderType } from 'next-auth/providers/index'
 
 interface SignInButtonProps extends ButtonProps {

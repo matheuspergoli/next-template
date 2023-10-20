@@ -21,14 +21,7 @@
 			}
 		],
 		"paths": {
-			"@/*": ["./src/*"],
-			"@libs/*": ["./src/libs/*"],
-			"@shared/*": ["./src/shared/*"],
-			"@context/*": ["./src/context/*"],
-			"@services/*": ["./src/services/*"],
-			"@provider/*": ["./src/provider/*"],
-			"@middlewares/*": ["./src/middlewares/*"],
-			"@environment/*": ["./src/environment/*"]
+			"@/*": ["./src/*"]
 		}
 	},
 	"exclude": ["node_modules", ".next"],

@@ -1,5 +1,5 @@
-import { prisma } from '@libs/prisma'
-import { env } from '@environment/env'
+import { prisma } from '@/libs/prisma'
+import { env } from '@/environment/env'
 import { PrismaAdapter } from '@auth/prisma-adapter'
 import GithubProvider from 'next-auth/providers/github'
 import { NextAuthOptions, getServerSession } from 'next-auth'

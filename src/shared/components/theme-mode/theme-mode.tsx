@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { useTheme } from 'next-themes'
-import { Button } from '@shared/ui/button'
+import { Button } from '@/shared/ui/button'
 import { Moon, Laptop, SunMedium } from 'lucide-react'
 
 import {
@@ -10,7 +10,7 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger
-} from '@shared/ui/dropdown-menu'
+} from '@/shared/ui/dropdown-menu'
 
 export function ThemeMode() {
 	const { setTheme } = useTheme()

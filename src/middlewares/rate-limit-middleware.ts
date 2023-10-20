@@ -1,6 +1,6 @@
-import { env } from '@environment/env'
+import { env } from '@/environment/env'
 import { getToken } from 'next-auth/jwt'
-import { rateLimit } from '@libs/rate-limit'
+import { rateLimit } from '@/libs/rate-limit'
 import { NextFetchEvent, NextRequest, NextResponse } from 'next/server'
 
 const limiter = rateLimit({

@@ -1,4 +1,4 @@
-import { env } from '@environment/env'
+import { env } from '@/environment/env'
 import { v2 as cloudinary } from 'cloudinary'
 
 cloudinary.config({

@@ -1,22 +1,14 @@
-'use client'
-
 import React from 'react'
-import { Button } from '@shared/ui/button'
-import { placeholderBlurhash } from '@libs/utils'
-import { ThemeMode } from '@shared/components/theme-mode'
-import { BlurImage } from '@shared/components/blur-image'
+import { placeholderBlurhash } from '@/libs/utils'
+import { ThemeMode } from '@/shared/components/theme-mode'
+import { BlurImage } from '@/shared/components/blur-image'
 
 export default function Page() {
-	const [count, setCount] = React.useState(0)
-
 	return (
 		<main className='flex h-screen w-screen flex-col items-center justify-center'>
 			<section className='flex flex-col items-center'>
 				<h1 className='text-2xl font-semibold'>Hello World</h1>
 				<p>NextJS 13 App Router</p>
-				<Button className='mt-5 font-bold' onClick={() => setCount((prev) => prev + 1)}>
-					Count is: {count}
-				</Button>
 			</section>
 
 			<section className='my-10 flex items-center justify-center'>
