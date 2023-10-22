@@ -1,6 +1,6 @@
 {
 	"name": "next-template",
-	"version": "0.1.0",
+	"version": "1.0.0",
 	"private": true,
 	"scripts": {
 		"dev": "next dev",
@@ -8,6 +8,8 @@
 		"format": "prettier --write \"src/**/*.{ts,tsx}\"",
 		"start": "next start",
 		"lint": "next lint",
+		"db:push": "prisma db push",
+		"db:studio": "prisma studio",
 		"postinstall": "prisma generate"
 	},
 	"dependencies": {

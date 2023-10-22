@@ -3,14 +3,14 @@ import { getToken } from 'next-auth/jwt'
 import { rateLimit } from '@/libs/rate-limit'
 import { NextFetchEvent, NextRequest, NextResponse } from 'next/server'
 
+/**
+ * @limiter_config - Configuração do rate limit para 500 requisições por hora
+ */
+
 const limiter = rateLimit({
 	limit: 500,
 	interval: 60 * 60 * 1000 // 1 hour
 })
-
-/**
- * @limiter_config - Configuração do rate limit para 500 requisições por hora
- */
 
 export const RateLimitMiddleware: MiddlewareFactory = (next) => {
 	return async (request: NextRequest, _next: NextFetchEvent) => {
@@ -20,6 +20,7 @@ export const RateLimitMiddleware: MiddlewareFactory = (next) => {
 		/**
 		 * @rate_limit - Exemplo de middleware de rate limit para todas as rotas que começam com '/api/site'
 		 * @config - Utilizando o Token-JWT para limitar as requisições com base no sub do token (id do usuário)
+		 * @ip - Também podemos utilizar o IP do usuário para limitar as requisições, utilizando request.ip (não recomendado)
 		 */
 
 		if (paths.some((path) => pathname.startsWith(path))) {
