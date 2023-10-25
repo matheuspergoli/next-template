@@ -1,5 +1,7 @@
 type HttpStatusCode = 200 | 201 | 204 | 400 | 401 | 403 | 404 | 429 | 500 | 503
 
+type HttpMethods = 'GET' | 'POST' | 'PUT' | 'DELETE'
+
 interface HttpResultSuccess<T> {
 	data: T
 	success: true
@@ -16,12 +18,11 @@ type HttpResult<T> = HttpResultSuccess<T> | HttpResultError
 
 interface HttpHandlerOptions {
 	baseURL?: string
-	defaultTimeout?: number
 	defaultHeaders?: HeadersInit
 }
 
 export const createHttpHandler = (options: HttpHandlerOptions = {}) => {
-	const { baseURL = '', defaultTimeout = 5000, defaultHeaders = {} } = options
+	const { baseURL = '', defaultHeaders = {} } = options
 
 	const normalizeUrl = (url: string): string => {
 		if (url.startsWith('/')) {
@@ -35,68 +36,37 @@ export const createHttpHandler = (options: HttpHandlerOptions = {}) => {
 		'Content-Type': 'application/json'
 	})
 
-	const convertToHttpStatusCode = (status: number): HttpStatusCode => {
-		const validStatusCodes: HttpStatusCode[] = [
-			200, 201, 204, 400, 401, 403, 404, 429, 500, 503
-		]
-		if (validStatusCodes.includes(status)) {
-			return status as HttpStatusCode
-		} else {
-			return 500
-		}
-	}
-
-	const formatError = <T>(error: Response): HttpResult<T> => {
-		const status = convertToHttpStatusCode(error.status)
-		if (status.toString().startsWith('4') || status.toString().startsWith('5')) {
-			return { success: false, error, status }
-		} else {
-			return { success: false, error, status: 500 }
-		}
-	}
-
 	const formatResponse = async <T>(response: Response): Promise<HttpResult<T>> => {
-		const status = convertToHttpStatusCode(response.status)
-		if (status.toString().startsWith('2')) {
+		const status = response.status as HttpStatusCode
+		if (response.ok) {
 			try {
 				const data = (await response.json()) as T
 				return { success: true, data, status }
 			} catch (error) {
-				return { success: false, error, status: 500 }
+				return { success: false, error, status }
 			}
 		} else {
-			return formatError(response)
+			return { success: false, error: response.statusText, status }
 		}
 	}
 
 	const request = async <T>(
 		url: string,
-		method: string,
+		method: HttpMethods,
 		data?: Record<string, unknown>,
 		params?: RequestInit
 	): Promise<HttpResult<T>> => {
-		const controller = new AbortController()
 		try {
-			const response = await Promise.race([
-				fetch(new URL(baseURL).href + normalizeUrl(url), {
-					method,
-					headers: getDefaultHeaders(),
-					body: data ? JSON.stringify(data) : undefined,
-					signal: controller.signal,
-					...params
-				}),
-				new Promise<Response>((_, reject) => {
-					const timeout = setTimeout(() => {
-						clearTimeout(timeout)
-						reject(new Error('Tempo de requisição excedido'))
-					}, defaultTimeout)
-				})
-			])
-			return formatResponse(response)
+			const response = await fetch(new URL(baseURL).href + normalizeUrl(url), {
+				method,
+				headers: getDefaultHeaders(),
+				body: data ? JSON.stringify(data) : undefined,
+				...params
+			})
+			return formatResponse<T>(response)
 		} catch (error) {
-			controller.abort()
 			if (error instanceof Response) {
-				return formatError(error)
+				return formatResponse<T>(error)
 			} else {
 				return { success: false, error, status: 500 }
 			}
