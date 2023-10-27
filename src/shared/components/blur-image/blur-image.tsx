@@ -21,7 +21,7 @@ export const BlurImage = (props: BlurImageProps) => {
 				loading ? 'scale-125 blur-lg' : 'scale-100 blur-0',
 				props.className
 			)}
-			onLoadingComplete={() => setLoading(false)}
+			onLoad={() => setLoading(false)}
 		/>
 	)
 }
