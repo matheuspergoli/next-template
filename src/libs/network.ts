@@ -33,6 +33,7 @@ export const createHttpHandler = (options: HttpHandlerOptions = {}) => {
 
 	const getDefaultHeaders = (): HeadersInit => ({
 		...defaultHeaders,
+		Accept: 'application/json',
 		'Content-Type': 'application/json'
 	})
 
@@ -43,7 +44,7 @@ export const createHttpHandler = (options: HttpHandlerOptions = {}) => {
 				const data = (await response.json()) as T
 				return { success: true, data, status }
 			} catch (error) {
-				return { success: false, error, status }
+				return { success: false, error: response.statusText, status }
 			}
 		} else {
 			return { success: false, error: response.statusText, status }
