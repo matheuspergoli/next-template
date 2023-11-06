@@ -1,99 +1,84 @@
-type HttpStatusCode = 200 | 201 | 204 | 400 | 401 | 403 | 404 | 429 | 500 | 503
-
-type HttpMethods = 'GET' | 'POST' | 'PUT' | 'DELETE'
+import axios, { isAxiosError, type InternalAxiosRequestConfig } from 'axios'
 
 interface HttpResultSuccess<T> {
 	data: T
 	success: true
-	status: HttpStatusCode
+	status: number
 }
 
 interface HttpResultError {
 	success: false
-	status: HttpStatusCode
+	status: number
 	error: unknown
 }
 
 type HttpResult<T> = HttpResultSuccess<T> | HttpResultError
 
-interface HttpHandlerOptions {
-	baseURL?: string
-	defaultHeaders?: HeadersInit
+type HttpRequest = <T>(
+	url: string,
+	data?: Record<string, unknown>,
+	params?: Record<string, unknown>
+) => Promise<HttpResult<T>>
+
+type InterceptorCallback = (
+	config: InternalAxiosRequestConfig
+) => InternalAxiosRequestConfig | Promise<InternalAxiosRequestConfig>
+
+type Interceptor = (
+	onFulfilled?: InterceptorCallback,
+	onRejected?: (error: unknown) => unknown
+) => void
+
+interface HttpClient {
+	get: HttpRequest
+	post: HttpRequest
+	put: HttpRequest
+	delete: HttpRequest
+	addInterceptor: Interceptor
 }
 
-export const createHttpHandler = (options: HttpHandlerOptions = {}) => {
-	const { baseURL = '', defaultHeaders = {} } = options
-
-	const normalizeUrl = (url: string): string => {
-		if (url.startsWith('/')) {
-			url = url.slice(1)
-		}
-		return url
-	}
-
-	const getDefaultHeaders = (): HeadersInit => ({
-		...defaultHeaders,
-		Accept: 'application/json',
-		'Content-Type': 'application/json'
+export const createHttpClient = (baseURL?: string): HttpClient => {
+	const client = axios.create({
+		baseURL: baseURL ?? ''
 	})
 
-	const formatResponse = async <T>(response: Response): Promise<HttpResult<T>> => {
-		const status = response.status as HttpStatusCode
-		if (response.ok) {
-			try {
-				const data = (await response.json()) as T
-				return { success: true, data, status }
-			} catch (error) {
-				return { success: false, error: response.statusText, status }
-			}
-		} else {
-			return { success: false, error: response.statusText, status }
+	const formatError = <T>(error: unknown): HttpResult<T> => {
+		if (isAxiosError(error)) {
+			return { success: false, error, status: error.response?.status || 500 }
 		}
+		return { success: false, error, status: 500 }
 	}
 
-	const request = async <T>(
-		url: string,
-		method: HttpMethods,
-		data?: Record<string, unknown>,
-		params?: RequestInit
-	): Promise<HttpResult<T>> => {
+	const makeRequest: HttpRequest = async (url, data, params) => {
 		try {
-			const response = await fetch(new URL(baseURL).href + normalizeUrl(url), {
-				method,
-				headers: getDefaultHeaders(),
-				body: data ? JSON.stringify(data) : undefined,
-				...params
+			const response = await client.request({
+				url,
+				data,
+				params
 			})
-			return formatResponse<T>(response)
+			return { success: true, data: response.data, status: response.status }
 		} catch (error) {
-			if (error instanceof Response) {
-				return formatResponse<T>(error)
-			} else {
-				return { success: false, error, status: 500 }
-			}
+			return formatError(error)
 		}
 	}
 
-	const get = <T>(url: string, params?: RequestInit) => {
-		return request<T>(url, 'GET', undefined, params)
+	const addInterceptor = (
+		onFulfilled?: InterceptorCallback,
+		onRejected?: (error: unknown) => unknown
+	) => {
+		client.interceptors.request.use(onFulfilled, onRejected)
 	}
 
-	const post = <T>(url: string, data?: Record<string, unknown>, params?: RequestInit) => {
-		return request<T>(url, 'POST', data, params)
-	}
-
-	const put = <T>(url: string, data?: Record<string, unknown>, params?: RequestInit) => {
-		return request<T>(url, 'PUT', data, params)
-	}
-
-	const del = <T>(url: string, data?: Record<string, unknown>, params?: RequestInit) => {
-		return request<T>(url, 'DELETE', data, params)
-	}
+	const get: HttpRequest = (url, params) => makeRequest(url, undefined, params)
+	const post: HttpRequest = (url, data) => makeRequest(url, data)
+	const put: HttpRequest = (url, data) => makeRequest(url, data)
+	const del: HttpRequest = (url, params) => makeRequest(url, undefined, params)
 
 	return {
 		get,
-		put,
 		post,
-		delete: del
+		put,
+		delete: del,
+		addInterceptor
 	}
 }
