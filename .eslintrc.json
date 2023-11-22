@@ -5,6 +5,7 @@
 		"plugin:react/recommended",
 		"plugin:import/recommended",
 		"plugin:react-hooks/recommended",
+		"plugin:tailwindcss/recommended",
 		"plugin:@typescript-eslint/recommended"
 	],
 	"globals": {
@@ -13,6 +14,10 @@
 	"settings": {
 		"react": {
 			"version": "detect"
+		},
+		"tailwindcss": {
+			"callees": ["cn"],
+			"config": "tailwind.config.js"
 		}
 	},
 	"rules": {
