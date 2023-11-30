@@ -1,10 +1,11 @@
 'use client'
 
 import React from 'react'
-import { useTheme } from 'next-themes'
-import { Button } from '@/shared/ui/button'
-import { Moon, Laptop, SunMedium } from 'lucide-react'
 
+import { Laptop, Moon, SunMedium } from 'lucide-react'
+import { useTheme } from 'next-themes'
+
+import { Button } from '@/shared/ui/button'
 import {
 	DropdownMenu,
 	DropdownMenuContent,

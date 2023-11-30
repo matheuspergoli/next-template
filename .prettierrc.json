@@ -9,5 +9,26 @@
 	"bracketSpacing": true,
 	"bracketSameLine": true,
 	"trailingComma": "none",
-	"plugins": ["prettier-plugin-tailwindcss"]
+	"importOrder": [
+		"^(react/(.*)$)|^(react$)",
+		"^(next/(.*)$)|^(next$)",
+		"",
+		"<THIRD_PARTY_MODULES>",
+		"",
+		"^types$",
+		"^@/types/(.*)$",
+		"^@/environment/(.*)$",
+		"^@/config/(.*)$",
+		"^@/libs/(.*)$",
+		"^@/hooks/(.*)$",
+		"^@/shared/ui/(.*)$",
+		"^@/shared/components/(.*)$",
+		"^@/components/(.*)$",
+		"^@/styles/(.*)$",
+		"^@/app/(.*)$",
+		"",
+		"^[./]"
+	],
+	"importOrderParserPlugins": ["typescript", "jsx", "decorators-legacy"],
+	"plugins": ["prettier-plugin-tailwindcss", "@ianvs/prettier-plugin-sort-imports"]
 }

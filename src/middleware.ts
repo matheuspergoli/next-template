@@ -1,8 +1,7 @@
-import { StackMiddleware } from '@/middlewares/stack-middleware'
-
+import { AuthorizationMiddleware } from '@/middlewares/authorization-middleware'
 import { LoggingMiddleware } from '@/middlewares/logging-middleware'
 import { RateLimitMiddleware } from '@/middlewares/rate-limit-middleware'
-import { AuthorizationMiddleware } from '@/middlewares/authorization-middleware'
+import { StackMiddleware } from '@/middlewares/stack-middleware'
 
 export default StackMiddleware([
 	LoggingMiddleware,

@@ -1,7 +1,8 @@
 import React from 'react'
+
 import { placeholderBlurhash } from '@/libs/utils'
-import { ThemeMode } from '@/shared/components/theme-mode'
 import { BlurImage } from '@/shared/components/blur-image'
+import { ThemeMode } from '@/shared/components/theme-mode'
 
 export default function Page() {
 	return (

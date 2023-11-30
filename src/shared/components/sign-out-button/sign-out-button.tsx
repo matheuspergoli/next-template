@@ -1,10 +1,12 @@
 'use client'
 
 import React from 'react'
-import { cn } from '@/libs/utils'
+
+import { Slot } from '@radix-ui/react-slot'
 import { Loader2 } from 'lucide-react'
 import { signOut } from 'next-auth/react'
-import { Slot } from '@radix-ui/react-slot'
+
+import { cn } from '@/libs/utils'
 import { ButtonProps, buttonVariants } from '@/shared/ui/button'
 
 export const SignOutButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
