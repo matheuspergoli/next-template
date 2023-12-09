@@ -19,7 +19,7 @@ export const SignOutButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
 			<Comp
 				onClick={() => {
 					setLoading(true)
-					signOut({ callbackUrl: '/' })
+					signOut()
 				}}
 				className={cn(buttonVariants({ variant, size, className }))}
 				ref={ref}
