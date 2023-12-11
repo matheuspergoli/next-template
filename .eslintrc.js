@@ -39,9 +39,7 @@ module.exports = {
 		}
 	},
 	rules: {
-		'import/named': 'off',
-		'react/prop-types': 'off',
-		'import/no-named-as-default-member': 'off'
+		'react/prop-types': 'off'
 	},
 	ignorePatterns: [
 		'**/.*.js',
