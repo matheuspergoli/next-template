@@ -1,7 +1,3 @@
-const { resolve } = require('node:path')
-
-const project = resolve(process.cwd(), 'tsconfig.json')
-
 /** @type {import("eslint").Linter.Config} */
 module.exports = {
 	extends: [
@@ -25,11 +21,6 @@ module.exports = {
 		React: 'writable'
 	},
 	settings: {
-		'import/resolver': {
-			typescript: {
-				project
-			}
-		},
 		react: {
 			version: 'detect'
 		},
