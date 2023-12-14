@@ -8,7 +8,7 @@ cloudinary.config({
 	cloud_name: env.CLOUDINARY_CLOUD_NAME
 })
 
-export const uploadToCloudinary = async (formData: FormData) => {
+export const uploadToCloudinary = async ({ formData }: { formData: FormData }) => {
 	const file = formData.get('file') as File
 
 	if (!file) {
@@ -30,8 +30,8 @@ export const uploadToCloudinary = async (formData: FormData) => {
 	return { url: result.secure_url, public_id: result.public_id }
 }
 
-export const deleteFromCloudinary = async (public_id: string) => {
-	await cloudinary.uploader.destroy(public_id, (error, result) => {
+export const deleteFromCloudinary = async ({ publicId }: { publicId: string }) => {
+	await cloudinary.uploader.destroy(publicId, (error, result) => {
 		if (error) {
 			console.log(error)
 		} else {

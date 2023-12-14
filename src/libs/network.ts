@@ -14,11 +14,13 @@ interface HttpResultError {
 
 type HttpResult<T> = HttpResultSuccess<T> | HttpResultError
 
-type HttpRequest = <T>(
-	url: string,
-	data?: Record<string, unknown>,
+interface HttpRequestOptions {
+	url: string
+	data?: Record<string, unknown>
 	params?: Record<string, unknown>
-) => Promise<HttpResult<T>>
+}
+
+type HttpRequest = <T>(options: HttpRequestOptions) => Promise<HttpResult<T>>
 
 type InterceptorCallback = (
 	config: InternalAxiosRequestConfig
@@ -37,19 +39,19 @@ interface HttpClient {
 	addInterceptor: Interceptor
 }
 
-export const createHttpClient = (baseURL?: string): HttpClient => {
+export const createHttpClient = ({ baseURL }: { baseURL?: string }): HttpClient => {
 	const client = axios.create({
 		baseURL: baseURL ?? ''
 	})
 
-	const formatError = <T>(error: unknown): HttpResult<T> => {
+	const formatError = <T>({ error }: { error: unknown }): HttpResult<T> => {
 		if (isAxiosError(error)) {
 			return { success: false, error, status: error.response?.status || 500 }
 		}
 		return { success: false, error, status: 500 }
 	}
 
-	const makeRequest: HttpRequest = async (url, data, params) => {
+	const makeRequest: HttpRequest = async ({ url, data, params }) => {
 		try {
 			const response = await client.request({
 				url,
@@ -58,7 +60,7 @@ export const createHttpClient = (baseURL?: string): HttpClient => {
 			})
 			return { success: true, data: response.data, status: response.status }
 		} catch (error) {
-			return formatError(error)
+			return formatError({ error })
 		}
 	}
 
@@ -69,10 +71,10 @@ export const createHttpClient = (baseURL?: string): HttpClient => {
 		client.interceptors.request.use(onFulfilled, onRejected)
 	}
 
-	const get: HttpRequest = (url, params) => makeRequest(url, undefined, params)
-	const post: HttpRequest = (url, data) => makeRequest(url, data)
-	const put: HttpRequest = (url, data) => makeRequest(url, data)
-	const del: HttpRequest = (url, params) => makeRequest(url, undefined, params)
+	const get: HttpRequest = ({ url, data, params }) => makeRequest({ url, data, params })
+	const post: HttpRequest = ({ url, data, params }) => makeRequest({ url, data, params })
+	const put: HttpRequest = ({ url, data, params }) => makeRequest({ url, data, params })
+	const del: HttpRequest = ({ url, data, params }) => makeRequest({ url, data, params })
 
 	return {
 		get,
