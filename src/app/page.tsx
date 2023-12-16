@@ -4,7 +4,7 @@ import { placeholderBlurhash } from '@/libs/utils'
 import { BlurImage } from '@/shared/components/blur-image'
 import { ThemeMode } from '@/shared/components/theme-mode'
 
-export default async function Page() {
+export default function Page() {
 	return (
 		<main className='flex h-screen w-screen flex-col items-center justify-center'>
 			<section className='flex flex-col items-center'>
