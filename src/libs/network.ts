@@ -18,6 +18,7 @@ interface HttpRequestOptions {
 	url: string
 	data?: Record<string, unknown>
 	params?: Record<string, unknown>
+	method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
 }
 
 type HttpRequest = <T>(options: HttpRequestOptions) => Promise<HttpResult<T>>
@@ -32,10 +33,10 @@ type Interceptor = (
 ) => void
 
 interface HttpClient {
-	get: HttpRequest
-	post: HttpRequest
-	put: HttpRequest
-	delete: HttpRequest
+	get: <T>(opts: Omit<HttpRequestOptions, 'method'>) => Promise<HttpResult<T>>
+	post: <T>(opts: Omit<HttpRequestOptions, 'method'>) => Promise<HttpResult<T>>
+	put: <T>(opts: Omit<HttpRequestOptions, 'method'>) => Promise<HttpResult<T>>
+	delete: <T>(opts: Omit<HttpRequestOptions, 'method'>) => Promise<HttpResult<T>>
 	addInterceptor: Interceptor
 }
 
@@ -51,12 +52,13 @@ export const createHttpClient = ({ baseURL }: { baseURL?: string }): HttpClient 
 		return { success: false, error, status: 500 }
 	}
 
-	const makeRequest: HttpRequest = async ({ url, data, params }) => {
+	const makeRequest: HttpRequest = async ({ url, data, params, method }) => {
 		try {
 			const response = await client.request({
 				url,
 				data,
-				params
+				params,
+				method
 			})
 			return { success: true, data: response.data, status: response.status }
 		} catch (error) {
@@ -71,16 +73,11 @@ export const createHttpClient = ({ baseURL }: { baseURL?: string }): HttpClient 
 		client.interceptors.request.use(onFulfilled, onRejected)
 	}
 
-	const get: HttpRequest = ({ url, data, params }) => makeRequest({ url, data, params })
-	const post: HttpRequest = ({ url, data, params }) => makeRequest({ url, data, params })
-	const put: HttpRequest = ({ url, data, params }) => makeRequest({ url, data, params })
-	const del: HttpRequest = ({ url, data, params }) => makeRequest({ url, data, params })
-
 	return {
-		get,
-		post,
-		put,
-		delete: del,
-		addInterceptor
+		addInterceptor,
+		get: (opts) => makeRequest({ ...opts, method: 'GET' }),
+		post: (opts) => makeRequest({ ...opts, method: 'POST' }),
+		put: (opts) => makeRequest({ ...opts, method: 'PUT' }),
+		delete: (opts) => makeRequest({ ...opts, method: 'DELETE' })
 	}
 }

@@ -29,6 +29,13 @@ export const authOptions: NextAuthOptions = {
 			const dbUser = await prisma.user.findFirst({
 				where: {
 					email: token.email
+				},
+				select: {
+					id: true,
+					role: true,
+					name: true,
+					email: true,
+					image: true
 				}
 			})
 
