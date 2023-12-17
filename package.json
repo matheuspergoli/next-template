@@ -2,6 +2,9 @@
 	"name": "next-template",
 	"version": "1.0.0",
 	"private": true,
+	"description": "Next.js 14 template made by Matheus Pergoli",
+	"author": "Matheus Pergoli",
+	"license": "MIT",
 	"scripts": {
 		"dev": "next dev",
 		"build": "prisma generate && prisma db push && next build",

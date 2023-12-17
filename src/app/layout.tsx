@@ -4,8 +4,11 @@ import type { Metadata, Viewport } from 'next'
 
 import { Provider } from '@/provider/provider'
 
+import { SessionProvider } from '@/context/session-provider'
+import { ThemeProvider } from '@/context/theme-provider'
+
 export const metadata: Metadata = {
-	title: 'Template NextJS 13 App Router',
+	title: 'Template Next.js 14 App Router',
 	description: 'Created by Matheus Pergoli'
 }
 
@@ -18,7 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 	return (
 		<html lang='pt-br' suppressHydrationWarning>
 			<body>
-				<Provider>{children}</Provider>
+				<Provider providers={[SessionProvider, ThemeProvider]}>{children}</Provider>
 			</body>
 		</html>
 	)

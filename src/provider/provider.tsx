@@ -1,9 +1,4 @@
-'use client'
-
 import React from 'react'
-
-import { SessionProvider } from '@/context/session-provider'
-import { ThemeProvider } from '@/context/theme-provider'
 
 type ProviderType = ({ children }: { children: React.ReactNode }) => React.JSX.Element
 
@@ -22,10 +17,6 @@ const CombineProviders = ({ children, providers }: Props) => {
 	)
 }
 
-export const Provider = ({ children }: { children: React.ReactNode }) => {
-	return (
-		<CombineProviders providers={[SessionProvider, ThemeProvider]}>
-			{children}
-		</CombineProviders>
-	)
+export const Provider = ({ children, providers }: Props) => {
+	return <CombineProviders providers={providers}>{children}</CombineProviders>
 }
