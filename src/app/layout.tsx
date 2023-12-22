@@ -4,7 +4,7 @@ import type { Metadata, Viewport } from 'next'
 
 import { SessionProvider } from '@/context/session-provider'
 import { ThemeProvider } from '@/context/theme-provider'
-import { Provider } from '@/provider/provider'
+import { Provider } from '@/provider'
 
 export const metadata: Metadata = {
 	title: 'Template Next.js 14 App Router',

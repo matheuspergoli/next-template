@@ -3,5 +3,9 @@
 import { createAction } from '@/libs/action'
 
 export const hello = createAction(async (params: { message: string }) => {
-	return { success: true, data: `Hello ${params.message}`, status: 200 }
+	try {
+		return { success: true, data: `Hello ${params.message}`, status: 200 }
+	} catch (error) {
+		return { success: false, error, status: 500 }
+	}
 })
