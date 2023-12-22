@@ -1,16 +1,25 @@
 import React from 'react'
 
+import { hello } from '@/actions/hello'
 import { placeholderBlurhash } from '@/libs/utils'
 import { BlurImage } from '@/shared/components/blur-image'
 import { ThemeMode } from '@/shared/components/theme-mode'
 
-export default function Page() {
+export default async function Page() {
+	const message = await hello({ message: 'from Server Action' })
+
 	return (
 		<main className='flex h-screen w-screen flex-col items-center justify-center'>
 			<section className='flex flex-col items-center'>
 				<h1 className='text-2xl font-semibold'>Next.js 14 Template</h1>
 				<p>by Matheus Pergoli</p>
 			</section>
+
+			{message.success && (
+				<section className='my-10 flex items-center justify-center'>
+					<p className='text-xl'>{message.data}</p>
+				</section>
+			)}
 
 			<section className='my-10 flex items-center justify-center'>
 				<ThemeMode />
