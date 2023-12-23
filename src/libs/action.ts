@@ -1,12 +1,18 @@
 interface ActionResultSuccess<T> {
 	success: true
-	data: T
+	data: {
+		message: string
+		result: T
+	}
 	status: number
 }
 
 interface ActionResultError {
 	success: false
-	error: unknown
+	error: {
+		message: string
+		cause: unknown
+	}
 	status: number
 }
 
@@ -20,7 +26,14 @@ export const createAction = <R, P = void>(action: Action<R, P>): Action<R, P> =>
 			const result = await action(params)
 			return result
 		} catch (error) {
-			return { success: false, error, status: 500 }
+			return {
+				success: false,
+				error: {
+					cause: error,
+					message: 'Internal Server Error'
+				},
+				status: 500
+			}
 		}
 	}
 }

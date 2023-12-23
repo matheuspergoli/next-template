@@ -49,7 +49,7 @@ export default async function Page() {
 					</p>
 				</section>
 
-				{message.success && <p className='text-xl'>{message.data}</p>}
+				{message.success && <p className='text-xl'>{message.data.result}</p>}
 
 				<figure className='overflow-hidden rounded-lg'>
 					<BlurImage
