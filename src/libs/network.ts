@@ -1,18 +1,18 @@
 import axios, { isAxiosError, type InternalAxiosRequestConfig } from 'axios'
 
+import { Either, left, right } from '@/libs/either'
+
 interface HttpResultSuccess<T> {
 	data: T
-	success: true
 	status: number
 }
 
 interface HttpResultError {
-	success: false
 	status: number
 	error: unknown
 }
 
-type HttpResult<T> = HttpResultSuccess<T> | HttpResultError
+type HttpResult<T> = Either<HttpResultError, HttpResultSuccess<T>>
 
 interface HttpRequestOptions {
 	url: string
@@ -47,9 +47,9 @@ export const createHttpClient = ({ baseURL }: { baseURL?: string }): HttpClient 
 
 	const formatError = <T>({ error }: { error: unknown }): HttpResult<T> => {
 		if (isAxiosError(error)) {
-			return { success: false, error, status: error.response?.status || 500 }
+			return left({ error, status: error.response?.status || 500 })
 		}
-		return { success: false, error, status: 500 }
+		return left({ error, status: 500 })
 	}
 
 	const makeRequest: HttpRequest = async ({ url, data, params, method }) => {
@@ -60,7 +60,7 @@ export const createHttpClient = ({ baseURL }: { baseURL?: string }): HttpClient 
 				params,
 				method
 			})
-			return { success: true, data: response.data, status: response.status }
+			return right({ data: response.data, status: response.status })
 		} catch (error) {
 			return formatError({ error })
 		}

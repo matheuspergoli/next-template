@@ -1,39 +1,17 @@
+import { Either } from '@/libs/either'
+
 interface ActionResultSuccess<T> {
-	success: true
-	data: {
-		message: string
-		result: T
-	}
-	status: number
+	message: string
+	data: T
 }
 
 interface ActionResultError {
-	success: false
-	error: {
-		message: string
-		cause: unknown
-	}
-	status: number
+	message: string
+	cause: unknown
 }
 
-type ActionResult<T> = ActionResultSuccess<T> | ActionResultError
+type ActionResult<T> = Either<ActionResultError, ActionResultSuccess<T>>
 
 type Action<R, P = void> = (params: P) => Promise<ActionResult<R>>
 
-export const createAction = <R, P = void>(action: Action<R, P>): Action<R, P> => {
-	return async (params: P) => {
-		try {
-			const result = await action(params)
-			return result
-		} catch (error) {
-			return {
-				success: false,
-				error: {
-					cause: error,
-					message: 'Internal Server Error'
-				},
-				status: 500
-			}
-		}
-	}
-}
+export const createAction = <R, P = void>(action: Action<R, P>) => action

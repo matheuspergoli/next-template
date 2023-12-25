@@ -1,6 +1,5 @@
-import React from 'react'
-
 import { hello } from '@/actions/hello'
+import { isRight } from '@/libs/either'
 import { cn, placeholderBlurhash } from '@/libs/utils'
 import { BlurImage } from '@/shared/components/blur-image'
 import { ThemeMode } from '@/shared/components/theme-mode'
@@ -49,7 +48,7 @@ export default async function Page() {
 					</p>
 				</section>
 
-				{message.success && <p className='text-xl'>{message.data.result}</p>}
+				{isRight(message) && <p className='text-xl'>{message.value.data}</p>}
 
 				<figure className='overflow-hidden rounded-lg'>
 					<BlurImage

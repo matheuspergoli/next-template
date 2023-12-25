@@ -1,25 +1,18 @@
 'use server'
 
 import { createAction } from '@/libs/action'
+import { left, right } from '@/libs/either'
 
 export const hello = createAction(async (params: { message: string }) => {
 	try {
-		return {
-			success: true,
-			data: {
-				message: 'Success',
-				result: `Hello ${params.message}`
-			},
-			status: 200
-		}
+		return right({
+			message: 'Success',
+			data: `Hello ${params.message}`
+		})
 	} catch (error) {
-		return {
-			success: false,
-			error: {
-				message: 'Error sending message',
-				cause: error
-			},
-			status: 500
-		}
+		return left({
+			message: 'Internal Server Error',
+			cause: error
+		})
 	}
 })
