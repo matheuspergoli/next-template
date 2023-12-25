@@ -17,6 +17,7 @@
 		"^(\\w)",
 		"",
 		"^(\\@/)",
+		"",
 		"^[./]"
 	],
 	"importOrderParserPlugins": ["typescript", "jsx", "decorators-legacy"],
