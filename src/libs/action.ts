@@ -1,3 +1,5 @@
+import { Session } from 'next-auth'
+
 import { getSession } from '@/libs/auth'
 import { Either, left } from '@/libs/either'
 
@@ -17,7 +19,12 @@ type Action<R, P = void> = (params: P) => Promise<ActionResult<R>>
 
 export const createAction = <R, P = void>(action: Action<R, P>) => action
 
-export const createAuthorizedAction = <R, P = void>(action: Action<R, P>) => {
+type AuthorizedAction<R, P = void> = (
+	params: P,
+	session: Session
+) => Promise<ActionResult<R>>
+
+export const createAuthorizedAction = <R, P = void>(action: AuthorizedAction<R, P>) => {
 	return async (params: P) => {
 		const session = await getSession()
 		if (!session) {
@@ -26,6 +33,6 @@ export const createAuthorizedAction = <R, P = void>(action: Action<R, P>) => {
 				cause: null
 			})
 		}
-		return action(params)
+		return action(params, session)
 	}
 }
