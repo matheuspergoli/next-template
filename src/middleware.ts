@@ -1,12 +1,12 @@
-import { AuthorizationMiddleware } from '@/middlewares/authorization-middleware'
-import { LoggingMiddleware } from '@/middlewares/logging-middleware'
-import { RateLimitMiddleware } from '@/middlewares/rate-limit-middleware'
-import { StackMiddleware } from '@/middlewares/stack-middleware'
+import { authorizationMiddleware } from '@/middlewares/authorization-middleware'
+import { loggingMiddleware } from '@/middlewares/logging-middleware'
+import { rateLimitMiddleware } from '@/middlewares/rate-limit-middleware'
+import { stackMiddleware } from '@/libs/middleware'
 
-export default StackMiddleware([
-	LoggingMiddleware,
-	RateLimitMiddleware,
-	AuthorizationMiddleware
+export default stackMiddleware([
+	loggingMiddleware,
+	rateLimitMiddleware,
+	authorizationMiddleware
 ])
 
 export const config = {

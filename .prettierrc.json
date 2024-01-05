@@ -10,7 +10,7 @@
 	"bracketSameLine": true,
 	"trailingComma": "none",
 	"importOrder": [
-		"^(react/(.*)$)|^(react$)",
+		"^(react/(.*)$)|^(react$)|^(react-dom/(.*)$)|^(react-dom$)",
 		"^(next/(.*)$)|^(next$)",
 		"",
 		"<THIRD_PARTY_MODULES>",

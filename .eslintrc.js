@@ -6,12 +6,13 @@ const project = resolve(process.cwd(), 'tsconfig.json')
 module.exports = {
 	extends: [
 		'eslint:recommended',
-		'next/core-web-vitals',
+		'plugin:@typescript-eslint/recommended',
 		'plugin:react/recommended',
 		'plugin:import/recommended',
 		'plugin:react-hooks/recommended',
 		'plugin:tailwindcss/recommended',
-		'plugin:@typescript-eslint/recommended'
+		'plugin:@next/next/recommended',
+		'next'
 	],
 	parser: '@typescript-eslint/parser',
 	parserOptions: {

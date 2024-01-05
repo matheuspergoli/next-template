@@ -1,13 +1,13 @@
 import React from 'react'
 
-type ProviderType = ({ children }: { children: React.ReactNode }) => React.JSX.Element
+type ProviderFunction = (props: { children: React.ReactNode }) => React.ReactNode;
 
-interface Props {
-	children: React.ReactNode
-	providers: Array<ProviderType>
+interface CombineProvidersProps {
+	children: React.ReactNode;
+	providers: Array<ProviderFunction>;
 }
 
-const CombineProviders = ({ children, providers }: Props) => {
+const CombineProviders = ({ children, providers }: CombineProvidersProps) => {
 	return (
 		<>
 			{providers.reduceRight((acc, Provider) => {
@@ -17,6 +17,6 @@ const CombineProviders = ({ children, providers }: Props) => {
 	)
 }
 
-export const Provider = ({ children, providers }: Props) => {
+export const Provider = ({ children, providers }: CombineProvidersProps) => {
 	return <CombineProviders providers={providers}>{children}</CombineProviders>
 }

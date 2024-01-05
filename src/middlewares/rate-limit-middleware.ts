@@ -14,7 +14,7 @@ const limiter = rateLimit({
 	interval: 60 * 60 * 1000 // 1 hour
 })
 
-export const RateLimitMiddleware: MiddlewareFactory = (next) => {
+export const rateLimitMiddleware: MiddlewareFactory = (next) => {
 	return async (request: NextRequest, _next: NextFetchEvent) => {
 		const pathname = request.nextUrl.pathname
 		const paths = ['/api/site']

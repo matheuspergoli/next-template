@@ -1,6 +1,6 @@
 import { NextFetchEvent, NextRequest } from 'next/server'
 
-export const AuthorizationMiddleware: MiddlewareFactory = (next) => {
+export const authorizationMiddleware: MiddlewareFactory = (next) => {
 	return async (request: NextRequest, _next: NextFetchEvent) => {
 		const pathname = request.nextUrl.pathname
 
