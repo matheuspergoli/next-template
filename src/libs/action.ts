@@ -3,34 +3,36 @@ import { Session } from 'next-auth'
 import { getSession } from '@/libs/auth'
 import { Either, left } from '@/libs/either'
 
-interface ActionResultSuccess<T> {
+interface ActionResultSuccess<S> {
 	message: string
-	data: T
+	data: S
 }
 
-interface ActionResultError {
+interface ActionResultError<E = unknown> {
 	message: string
-	cause: unknown
+	cause: E
 }
 
-type ActionResult<T> = Either<ActionResultError, ActionResultSuccess<T>>
+type ActionResult<S, E = unknown> = Either<ActionResultError<E>, ActionResultSuccess<S>>
 
-type Action<R, P = void> = (params: P) => Promise<ActionResult<R>>
+type Action<S, P = void, E = unknown> = (params: P) => Promise<ActionResult<S, E>>
 
-export const createAction = <R, P = void>(action: Action<R, P>) => action
+export const createAction = <S, P = void, E = unknown>(action: Action<S, P, E>) => action
 
-type AuthorizedAction<R, P = void> = (
+type AuthorizedAction<S, P = void, E = unknown> = (
 	params: P,
 	session: Session
-) => Promise<ActionResult<R>>
+) => Promise<ActionResult<S, E>>
 
-export const createAuthorizedAction = <R, P = void>(action: AuthorizedAction<R, P>) => {
+export const createAuthorizedAction = <S, P = void, E = unknown>(
+	action: AuthorizedAction<S, P, E>
+) => {
 	return async (params: P) => {
 		const session = await getSession()
 		if (!session) {
 			return left({
 				message: 'Unauthorized',
-				cause: null
+				cause: 'No session'
 			})
 		}
 		return action(params, session)

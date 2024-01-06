@@ -11,14 +11,12 @@ type ActiveLinkProps = LinkProps & {
 	className?: string
 }
 
-export const ActiveLink = ({ href, children, className, ...rest }: ActiveLinkProps) => {
+export const ActiveLink = ({ href, className, ...rest }: ActiveLinkProps) => {
 	const pathname = usePathname()
 	const isActive = pathname === href.toString()
 	const variant: ButtonProps['variant'] = isActive ? 'default' : 'ghost'
 
 	return (
-		<Link href={href} className={cn(buttonVariants({ variant }), className)} {...rest}>
-			{children}
-		</Link>
+		<Link href={href} className={cn(buttonVariants({ variant }), className)} {...rest} />
 	)
 }

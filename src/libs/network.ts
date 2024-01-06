@@ -32,7 +32,7 @@ type Interceptor = (
 	onRejected?: (error: unknown) => unknown
 ) => void
 
-interface HttpClient {
+type HttpClient = (props?: { baseURL?: string }) => {
 	get: <T>(opts: Omit<HttpRequestOptions, 'method'>) => Promise<HttpResult<T>>
 	post: <T>(opts: Omit<HttpRequestOptions, 'method'>) => Promise<HttpResult<T>>
 	put: <T>(opts: Omit<HttpRequestOptions, 'method'>) => Promise<HttpResult<T>>
@@ -40,9 +40,9 @@ interface HttpClient {
 	addInterceptor: Interceptor
 }
 
-export const createHttpClient = ({ baseURL }: { baseURL?: string }): HttpClient => {
+export const createHttpClient: HttpClient = (props) => {
 	const client = axios.create({
-		baseURL: baseURL ?? ''
+		baseURL: props?.baseURL || ''
 	})
 
 	const formatError = <T>({ error }: { error: unknown }): HttpResult<T> => {
