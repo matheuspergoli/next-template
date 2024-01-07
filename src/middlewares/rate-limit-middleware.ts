@@ -1,4 +1,4 @@
-import { NextFetchEvent, NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 import { getToken } from 'next-auth/jwt'
 
@@ -14,31 +14,22 @@ const limiter = rateLimit({
 	interval: 60 * 60 * 1000 // 1 hour
 })
 
-export const rateLimitMiddleware: MiddlewareFactory = (next) => {
-	return async (request: NextRequest, _next: NextFetchEvent) => {
-		const pathname = request.nextUrl.pathname
-		const paths = ['/api/site']
+export const rateLimitMiddleware = async (request: NextRequest) => {
+	/**
+	 * @rate_limit - Exemplo de middleware de rate limit para todas as rotas que começam com '/api/site'
+	 * @config - Utilizando o Token-JWT para limitar as requisições com base no sub do token (id do usuário)
+	 * @ip - Também podemos utilizar o IP do usuário para limitar as requisições, utilizando request.ip (não recomendado)
+	 */
 
-		/**
-		 * @rate_limit - Exemplo de middleware de rate limit para todas as rotas que começam com '/api/site'
-		 * @config - Utilizando o Token-JWT para limitar as requisições com base no sub do token (id do usuário)
-		 * @ip - Também podemos utilizar o IP do usuário para limitar as requisições, utilizando request.ip (não recomendado)
-		 */
+	const token = await getToken({
+		req: request,
+		secret: env.NEXTAUTH_SECRET
+	})
 
-		if (paths.some((path) => pathname.startsWith(path))) {
-			const token = await getToken({
-				req: request,
-				secret: env.NEXTAUTH_SECRET
-			})
+	const { isRateLimited, limit, currentUsage } = limiter.check(token?.sub as string)
+	console.log(`[RATE USAGE] ${currentUsage}/${limit}`)
 
-			const { isRateLimited, limit, currentUsage } = limiter.check(token?.sub as string)
-			console.log(`[RATE USAGE] ${currentUsage}/${limit}`)
-
-			if (isRateLimited) {
-				return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
-			}
-		}
-
-		return next(request, _next)
+	if (isRateLimited) {
+		return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
 	}
 }

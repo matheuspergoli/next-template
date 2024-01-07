@@ -20,7 +20,7 @@ export const uploadToCloudinary = async ({ formData }: { formData: FormData }) =
 	const fileBase64 = `data:${file.type};base64,${buffer}`
 
 	const result = await cloudinary.uploader.upload(fileBase64, {
-		folder: 'draft-images',
+		folder: 'custom-images',
 		format: 'webp',
 		transformation: {
 			quality: 100
@@ -44,7 +44,7 @@ export const uploadManyToCloudinary = async ({ formData }: { formData: FormData 
 			const fileBase64 = `data:${file.type};base64,${buffer}`
 
 			const result = await cloudinary.uploader.upload(fileBase64, {
-				folder: 'draft-images',
+				folder: 'custom-images',
 				format: 'webp',
 				transformation: {
 					quality: 100

@@ -31,8 +31,8 @@ export const createAuthorizedAction = <S, P = void, E = unknown>(
 		const session = await getSession()
 		if (!session) {
 			return left({
-				message: 'Unauthorized',
-				cause: 'No session'
+				message: 'Não autorizado',
+				cause: 'Sessão inválida'
 			})
 		}
 		return action(params, session)

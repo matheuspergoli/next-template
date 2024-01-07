@@ -1,15 +1,44 @@
-import { NextMiddleware, NextResponse } from 'next/server'
+import { NextFetchEvent, NextMiddleware, NextRequest, NextResponse } from 'next/server'
 
-export const stackMiddleware = (
-	functions: MiddlewareFactory[] = [],
-	index = 0
-): NextMiddleware => {
-	const current = functions[index]
+type MiddlewareMap = {
+	[key: string]: NextMiddleware | NextMiddleware[]
+}
 
-	if (current) {
-		const next = stackMiddleware(functions, index + 1)
-		return current(next)
+export const createMiddleware = (pathMiddlewareMap: MiddlewareMap) => {
+	return async function middleware(request: NextRequest, event: NextFetchEvent) {
+		const path = request.nextUrl.pathname ?? '/'
+		let response: Response | NextResponse = NextResponse.next()
+
+		for (const [key, middlewares] of Object.entries(pathMiddlewareMap)) {
+			if (matchPath(key, path)) {
+				const middlewareList = Array.isArray(middlewares) ? middlewares : [middlewares]
+
+				const responses = await Promise.all(
+					middlewareList.map((mw) => mw(request, event))
+				)
+
+				const lastNonNullResponse = responses.reverse().find((res) => res != null)
+
+				if (lastNonNullResponse) {
+					response = lastNonNullResponse
+				}
+			}
+		}
+
+		return response
 	}
+}
 
-	return () => NextResponse.next()
+function matchPath(key: string, path: string) {
+	if (Array.isArray(key)) {
+		return key.some((pathPattern) => {
+			if (typeof pathPattern === 'string' && path.startsWith(pathPattern)) {
+				return true
+			}
+			return false
+		})
+	} else if (typeof key === 'string' && key.includes('*')) {
+		return path.startsWith(key.replace('*', ''))
+	}
+	return path === key
 }
