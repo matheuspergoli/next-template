@@ -10,8 +10,8 @@ import { rateLimit } from '@/libs/rate-limit'
  */
 
 const limiter = rateLimit({
-	limit: 500,
-	interval: 60 * 60 * 1000 // 1 hour
+	limit: Number(env.RATE_LIMIT_MAX),
+	interval: Number(env.RATE_LIMIT_INTERVAL)
 })
 
 export const rateLimitMiddleware = async (request: NextRequest) => {
