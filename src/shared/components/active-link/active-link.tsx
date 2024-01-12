@@ -12,12 +12,20 @@ type ActiveLinkProps = LinkProps & {
 	className?: string
 }
 
-export const ActiveLink = ({ href, className, ...rest }: ActiveLinkProps) => {
-	const pathname = usePathname()
-	const isActive = pathname === href.toString()
-	const variant: ButtonProps['variant'] = isActive ? 'default' : 'ghost'
+export const ActiveLink = React.forwardRef<HTMLAnchorElement, ActiveLinkProps>(
+	({ href, className, ...rest }, ref) => {
+		const pathname = usePathname()
+		const isActive = pathname === href.toString()
+		const variant: ButtonProps['variant'] = isActive ? 'default' : 'ghost'
 
-	return (
-		<Link href={href} className={cn(buttonVariants({ variant }), className)} {...rest} />
-	)
-}
+		return (
+			<Link
+				{...rest}
+				ref={ref}
+				href={href}
+				className={cn(buttonVariants({ variant }), className)}
+			/>
+		)
+	}
+)
+ActiveLink.displayName = 'ActiveLink'

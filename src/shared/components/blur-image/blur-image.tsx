@@ -10,19 +10,23 @@ interface BlurImageProps extends React.ComponentProps<typeof Image> {
 	className?: string
 }
 
-export const BlurImage = (props: BlurImageProps) => {
-	const [loading, setLoading] = React.useState(true)
+export const BlurImage = React.forwardRef<HTMLImageElement, BlurImageProps>(
+	({ alt, className, ...rest }, ref) => {
+		const [loading, setLoading] = React.useState(true)
 
-	return (
-		<Image
-			{...props}
-			alt={props.alt}
-			className={cn(
-				'duration-500 ease-in-out',
-				loading ? 'scale-125 blur-lg' : 'scale-100 blur-0',
-				props.className
-			)}
-			onLoad={() => setLoading(false)}
-		/>
-	)
-}
+		return (
+			<Image
+				{...rest}
+				alt={alt}
+				ref={ref}
+				className={cn(
+					'duration-500 ease-in-out',
+					loading ? 'scale-125 blur-lg' : 'scale-100 blur-0',
+					className
+				)}
+				onLoad={() => setLoading(false)}
+			/>
+		)
+	}
+)
+BlurImage.displayName = 'BlurImage'
