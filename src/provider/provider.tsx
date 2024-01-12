@@ -1,10 +1,10 @@
 import React from 'react'
 
-type ProviderFunction = (props: { children: React.ReactNode }) => React.ReactNode;
+type ProviderFunction = (props: { children: React.ReactNode }) => React.ReactNode
 
 interface CombineProvidersProps {
-	children: React.ReactNode;
-	providers: Array<ProviderFunction>;
+	children: React.ReactNode
+	providers: Array<ProviderFunction>
 }
 
 const CombineProviders = ({ children, providers }: CombineProvidersProps) => {

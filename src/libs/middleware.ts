@@ -32,12 +32,10 @@ export const createMiddleware = (pathMiddlewareMap: MiddlewareMap) => {
 function matchPath(key: string, path: string) {
 	if (Array.isArray(key)) {
 		return key.some((pathPattern) => {
-			if (typeof pathPattern === 'string' && path.startsWith(pathPattern)) {
-				return true
-			}
-			return false
+			return typeof pathPattern === 'string' && path.startsWith(pathPattern)
 		})
-	} else if (typeof key === 'string' && key.includes('*')) {
+	}
+	if (typeof key === 'string' && key.includes('*')) {
 		return path.startsWith(key.replace('*', ''))
 	}
 	return path === key

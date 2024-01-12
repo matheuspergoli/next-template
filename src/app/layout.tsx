@@ -1,5 +1,6 @@
 import '@/styles/globals.css'
 
+import React from 'react'
 import type { Metadata, Viewport } from 'next'
 
 import { SessionProvider } from '@/context/session-provider'
@@ -18,7 +19,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 	return (
-		<html lang='pt-br' suppressHydrationWarning>
+		<html lang='pt-BR' suppressHydrationWarning>
 			<body>
 				<Provider providers={[SessionProvider, ThemeProvider]}>{children}</Provider>
 			</body>

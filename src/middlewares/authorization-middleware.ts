@@ -18,5 +18,5 @@ export const authorizationMiddleware = (request: NextRequest) => {
 	// 	return NextResponse.redirect(new URL('/', request.url))
 	// }
 
-	console.log('[Authorization Middleware] Log from [Path] ' + pathname)
+	console.log(`[Authorization Middleware] Log from [Path] ${pathname}`)
 }
