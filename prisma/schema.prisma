@@ -46,6 +46,12 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+enum UserRole {
+  SUPERADMIN
+  ADMIN
+  USER
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -57,10 +63,4 @@ model User {
   sessions Session[]
 
   role UserRole @default(USER)
-}
-
-enum UserRole {
-  SUPERADMIN
-  ADMIN
-  USER
 }

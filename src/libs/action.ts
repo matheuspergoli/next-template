@@ -1,7 +1,7 @@
 import { Session } from 'next-auth'
 
-import { getSession } from '@/shared/libs/auth'
-import { Either, left } from '@/shared/libs/either'
+import { getSession } from '@/libs/auth'
+import { Either, left } from '@/libs/either'
 
 interface ActionResultSuccess<S> {
 	message: string

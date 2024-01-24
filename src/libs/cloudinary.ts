@@ -1,6 +1,6 @@
 import { v2 as cloudinary } from 'cloudinary'
 
-import { env } from '@/shared/environment'
+import { env } from '@/environment'
 
 cloudinary.config({
 	api_key: env.CLOUDINARY_API_KEY,
