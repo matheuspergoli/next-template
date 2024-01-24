@@ -1,8 +1,8 @@
 import { hello } from '@/actions/hello'
-import { isRight } from '@/libs/either'
-import { cn, placeholderBlurhash } from '@/libs/utils'
 import { BlurImage } from '@/shared/components/blur-image'
 import { ThemeMode } from '@/shared/components/theme-mode'
+import { isRight } from '@/shared/libs/either'
+import { cn, placeholderBlurhash } from '@/shared/libs/utils'
 import { buttonVariants } from '@/shared/ui/button'
 
 export default async function Page() {

@@ -3,8 +3,8 @@ import '@/styles/globals.css'
 import React from 'react'
 import type { Metadata, Viewport } from 'next'
 
-import { SessionProvider } from '@/context/session-provider'
-import { ThemeProvider } from '@/context/theme-provider'
+import { SessionProvider } from '@/features/session/session-provider'
+import { ThemeProvider } from '@/features/theme/theme-provider'
 import { Provider } from '@/provider'
 
 export const metadata: Metadata = {

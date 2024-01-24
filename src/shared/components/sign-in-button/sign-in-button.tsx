@@ -7,7 +7,7 @@ import { Loader2 } from 'lucide-react'
 import { BuiltInProviderType } from 'next-auth/providers/index'
 import { signIn } from 'next-auth/react'
 
-import { cn } from '@/libs/utils'
+import { cn } from '@/shared/libs/utils'
 import { ButtonProps, buttonVariants } from '@/shared/ui/button'
 
 interface SignInButtonProps extends ButtonProps {

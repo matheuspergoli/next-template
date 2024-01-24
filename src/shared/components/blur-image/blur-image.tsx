@@ -3,7 +3,7 @@
 import React from 'react'
 import Image from 'next/image'
 
-import { cn } from '@/libs/utils'
+import { cn } from '@/shared/libs/utils'
 
 interface BlurImageProps extends React.ComponentProps<typeof Image> {
 	alt: string

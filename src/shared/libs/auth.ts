@@ -2,8 +2,8 @@ import { PrismaAdapter } from '@auth/prisma-adapter'
 import { getServerSession, NextAuthOptions } from 'next-auth'
 import GithubProvider from 'next-auth/providers/github'
 
-import { env } from '@/environment/env'
-import { prisma } from '@/libs/prisma'
+import { env } from '@/shared/environment'
+import { prisma } from '@/shared/libs/prisma'
 
 export const authOptions: NextAuthOptions = {
 	adapter: PrismaAdapter(prisma) as NextAuthOptions['adapter'],

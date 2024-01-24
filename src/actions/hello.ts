@@ -1,7 +1,7 @@
 'use server'
 
-import { createAction } from '@/libs/action'
-import { left, right } from '@/libs/either'
+import { createAction } from '@/shared/libs/action'
+import { left, right } from '@/shared/libs/either'
 
 export const hello = createAction(async (params: { message: string }) => {
 	try {

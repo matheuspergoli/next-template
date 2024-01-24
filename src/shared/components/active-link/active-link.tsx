@@ -4,7 +4,7 @@ import React from 'react'
 import Link, { LinkProps } from 'next/link'
 import { usePathname } from 'next/navigation'
 
-import { cn } from '@/libs/utils'
+import { cn } from '@/shared/libs/utils'
 import { ButtonProps, buttonVariants } from '@/shared/ui/button'
 
 type ActiveLinkProps = LinkProps & {
