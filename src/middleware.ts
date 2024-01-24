@@ -1,7 +1,7 @@
-import { authorizationMiddleware } from '@/features/authorization/authorization-middleware'
-import { loggingMiddleware } from '@/features/logging/logging-middleware'
-import { rateLimitMiddleware } from '@/features/rate-limit/rate-limit-middleware'
 import { createMiddleware } from '@/libs/middleware'
+import { authorizationMiddleware } from '@/middlewares/authorization-middleware'
+import { loggingMiddleware } from '@/middlewares/logging-middleware'
+import { rateLimitMiddleware } from '@/middlewares/rate-limit-middleware'
 
 export default createMiddleware({
 	'*': [loggingMiddleware, rateLimitMiddleware, authorizationMiddleware]
