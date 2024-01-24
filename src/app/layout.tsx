@@ -3,7 +3,7 @@ import '@/styles/globals.css'
 import React from 'react'
 import type { Metadata, Viewport } from 'next'
 
-import { Provider } from '@/libs/provider'
+import { Provider } from '@/providers/main-provider'
 import { SessionProvider } from '@/providers/session'
 import { ThemeProvider } from '@/providers/theme'
 
