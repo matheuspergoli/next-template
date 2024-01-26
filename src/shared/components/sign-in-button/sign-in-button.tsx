@@ -1,14 +1,14 @@
-'use client'
+"use client"
 
-import React from 'react'
+import React from "react"
 
-import { Slot } from '@radix-ui/react-slot'
-import { Loader2 } from 'lucide-react'
-import { BuiltInProviderType } from 'next-auth/providers/index'
-import { signIn } from 'next-auth/react'
+import { Slot } from "@radix-ui/react-slot"
+import { Loader2 } from "lucide-react"
+import { BuiltInProviderType } from "next-auth/providers/index"
+import { signIn } from "next-auth/react"
 
-import { cn } from '@/libs/utils'
-import { ButtonProps, buttonVariants } from '@/shared/ui/button'
+import { cn } from "@/libs/utils"
+import { ButtonProps, buttonVariants } from "@/shared/ui/button"
 
 interface SignInButtonProps extends ButtonProps {
 	signInProvider?: BuiltInProviderType
@@ -22,14 +22,14 @@ export const SignInButton = React.forwardRef<HTMLButtonElement, SignInButtonProp
 			size,
 			children,
 			asChild = false,
-			signInProvider = 'github',
+			signInProvider = "github",
 			...props
 		},
 		ref
 	) => {
 		const [loading, setLoading] = React.useState(false)
 
-		const Comp = asChild ? Slot : 'button'
+		const Comp = asChild ? Slot : "button"
 
 		return (
 			<Comp
@@ -41,10 +41,10 @@ export const SignInButton = React.forwardRef<HTMLButtonElement, SignInButtonProp
 				ref={ref}
 				disabled={loading}
 				{...props}>
-				{loading ? <Loader2 className='animate-spin' /> : children}
+				{loading ? <Loader2 className="animate-spin" /> : children}
 			</Comp>
 		)
 	}
 )
 
-SignInButton.displayName = 'SignInButton'
+SignInButton.displayName = "SignInButton"

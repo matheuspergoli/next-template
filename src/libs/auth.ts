@@ -1,12 +1,12 @@
-import { PrismaAdapter } from '@auth/prisma-adapter'
-import { getServerSession, NextAuthOptions } from 'next-auth'
-import GithubProvider from 'next-auth/providers/github'
+import { PrismaAdapter } from "@auth/prisma-adapter"
+import { getServerSession, NextAuthOptions } from "next-auth"
+import GithubProvider from "next-auth/providers/github"
 
-import { env } from '@/environment'
-import { prisma } from '@/libs/prisma'
+import { env } from "@/environment"
+import { prisma } from "@/libs/prisma"
 
 export const authOptions: NextAuthOptions = {
-	adapter: PrismaAdapter(prisma) as NextAuthOptions['adapter'],
+	adapter: PrismaAdapter(prisma) as NextAuthOptions["adapter"],
 	providers: [
 		GithubProvider({
 			clientId: env.GITHUB_CLIENT_ID,
@@ -56,10 +56,10 @@ export const authOptions: NextAuthOptions = {
 		}
 	},
 	pages: {
-		signIn: '/login'
+		signIn: "/login"
 	},
 	session: {
-		strategy: 'jwt'
+		strategy: "jwt"
 	},
 	secret: env.NEXTAUTH_SECRET
 }

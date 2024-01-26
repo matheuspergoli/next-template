@@ -1,4 +1,4 @@
-import React from 'react'
+import React from "react"
 
 type IntersectionObserverConfig = IntersectionObserverInit
 
@@ -16,12 +16,12 @@ export const useIntersectionObserver = <T extends HTMLElement>(
 	const [visible, setVisible] = React.useState(false)
 
 	React.useEffect(() => {
-		const isClient = typeof window !== 'undefined'
+		const isClient = typeof window !== "undefined"
 		if (!isClient) return
 
-		const isSupported = 'IntersectionObserver' in window
+		const isSupported = "IntersectionObserver" in window
 		if (!isSupported) {
-			console.error('IntersectionObserver is not supported. Try to use polyfill.')
+			console.error("IntersectionObserver is not supported. Try to use polyfill.")
 			return
 		}
 

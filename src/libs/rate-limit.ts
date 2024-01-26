@@ -1,4 +1,4 @@
-import { LRUCache } from 'lru-cache'
+import { LRUCache } from "lru-cache"
 
 interface Options {
 	uniqueTokenPerInterval?: number // número máximo de tokens únicos no período de tempo

@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server'
+import { NextRequest } from "next/server"
 
 export const authorizationMiddleware = (request: NextRequest) => {
 	const pathname = request.nextUrl.pathname

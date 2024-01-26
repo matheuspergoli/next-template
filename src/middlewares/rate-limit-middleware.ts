@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from "next/server"
 
-import { getToken } from 'next-auth/jwt'
+import { getToken } from "next-auth/jwt"
 
-import { env } from '@/environment'
-import { rateLimit } from '@/libs/rate-limit'
+import { env } from "@/environment"
+import { rateLimit } from "@/libs/rate-limit"
 
 /**
  * @limiter_config - Configuração do rate limit para 500 requisições por hora
@@ -30,6 +30,6 @@ export const rateLimitMiddleware = async (request: NextRequest) => {
 	console.log(`[RATE USAGE] ${currentUsage}/${limit}`)
 
 	if (isRateLimited) {
-		return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+		return NextResponse.json({ error: "Too many requests" }, { status: 429 })
 	}
 }

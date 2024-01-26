@@ -1,4 +1,4 @@
-import React from 'react'
+import React from "react"
 
 interface UseClickOutsideConfig {
 	onOutside: () => void
@@ -11,7 +11,7 @@ interface UseClickOutsideReturn<T extends HTMLElement> {
 export type { UseClickOutsideConfig, UseClickOutsideReturn }
 
 const assertIsNode = (target: EventTarget | Node | null): target is Node => {
-	return !!target && 'nodeType' in target
+	return !!target && "nodeType" in target
 }
 
 export const useClickOutside = <T extends HTMLElement>({
@@ -26,10 +26,10 @@ export const useClickOutside = <T extends HTMLElement>({
 			onOutside()
 		}
 
-		document.addEventListener('mousedown', handleClickOutside)
+		document.addEventListener("mousedown", handleClickOutside)
 
 		return () => {
-			document.removeEventListener('mousedown', handleClickOutside)
+			document.removeEventListener("mousedown", handleClickOutside)
 		}
 	}, [onOutside])
 

@@ -1,6 +1,6 @@
-import axios, { isAxiosError, type InternalAxiosRequestConfig } from 'axios'
+import axios, { isAxiosError, type InternalAxiosRequestConfig } from "axios"
 
-import { Either, left, right } from '@/libs/either'
+import { Either, left, right } from "@/libs/either"
 
 interface HttpResultSuccess<T> {
 	data: T
@@ -18,7 +18,7 @@ interface HttpRequestOptions {
 	url: string
 	data?: Record<string, unknown>
 	params?: Record<string, unknown>
-	method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
+	method?: "GET" | "POST" | "PUT" | "DELETE"
 }
 
 type HttpRequest = <T>(options: HttpRequestOptions) => Promise<HttpResult<T>>
@@ -33,16 +33,16 @@ type Interceptor = (
 ) => void
 
 type HttpClient = (props?: { baseURL?: string }) => {
-	get: <T>(opts: Omit<HttpRequestOptions, 'method'>) => Promise<HttpResult<T>>
-	post: <T>(opts: Omit<HttpRequestOptions, 'method'>) => Promise<HttpResult<T>>
-	put: <T>(opts: Omit<HttpRequestOptions, 'method'>) => Promise<HttpResult<T>>
-	delete: <T>(opts: Omit<HttpRequestOptions, 'method'>) => Promise<HttpResult<T>>
+	get: <T>(opts: Omit<HttpRequestOptions, "method">) => Promise<HttpResult<T>>
+	post: <T>(opts: Omit<HttpRequestOptions, "method">) => Promise<HttpResult<T>>
+	put: <T>(opts: Omit<HttpRequestOptions, "method">) => Promise<HttpResult<T>>
+	delete: <T>(opts: Omit<HttpRequestOptions, "method">) => Promise<HttpResult<T>>
 	addInterceptor: Interceptor
 }
 
 export const createHttpClient: HttpClient = (props) => {
 	const client = axios.create({
-		baseURL: props?.baseURL || ''
+		baseURL: props?.baseURL || ""
 	})
 
 	const formatError = <T>({ error }: { error: unknown }): HttpResult<T> => {
@@ -75,9 +75,9 @@ export const createHttpClient: HttpClient = (props) => {
 
 	return {
 		addInterceptor,
-		get: (opts) => makeRequest({ ...opts, method: 'GET' }),
-		post: (opts) => makeRequest({ ...opts, method: 'POST' }),
-		put: (opts) => makeRequest({ ...opts, method: 'PUT' }),
-		delete: (opts) => makeRequest({ ...opts, method: 'DELETE' })
+		get: (opts) => makeRequest({ ...opts, method: "GET" }),
+		post: (opts) => makeRequest({ ...opts, method: "POST" }),
+		put: (opts) => makeRequest({ ...opts, method: "PUT" }),
+		delete: (opts) => makeRequest({ ...opts, method: "DELETE" })
 	}
 }

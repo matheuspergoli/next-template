@@ -1,4 +1,4 @@
-import { NextFetchEvent, NextMiddleware, NextRequest, NextResponse } from 'next/server'
+import { NextFetchEvent, NextMiddleware, NextRequest, NextResponse } from "next/server"
 
 type MiddlewareMap = {
 	[key: string]: NextMiddleware | NextMiddleware[]
@@ -6,7 +6,7 @@ type MiddlewareMap = {
 
 export const createMiddleware = (pathMiddlewareMap: MiddlewareMap) => {
 	return async function middleware(request: NextRequest, event: NextFetchEvent) {
-		const path = request.nextUrl.pathname ?? '/'
+		const path = request.nextUrl.pathname ?? "/"
 		let response: Response | NextResponse = NextResponse.next()
 
 		for (const [key, middlewares] of Object.entries(pathMiddlewareMap)) {
@@ -32,11 +32,11 @@ export const createMiddleware = (pathMiddlewareMap: MiddlewareMap) => {
 function matchPath(key: string, path: string) {
 	if (Array.isArray(key)) {
 		return key.some((pathPattern) => {
-			return typeof pathPattern === 'string' && path.startsWith(pathPattern)
+			return typeof pathPattern === "string" && path.startsWith(pathPattern)
 		})
 	}
-	if (typeof key === 'string' && key.includes('*')) {
-		return path.startsWith(key.replace('*', ''))
+	if (typeof key === "string" && key.includes("*")) {
+		return path.startsWith(key.replace("*", ""))
 	}
 	return path === key
 }

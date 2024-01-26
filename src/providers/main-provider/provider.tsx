@@ -1,4 +1,4 @@
-import React from 'react'
+import React from "react"
 
 type ProviderFunction = (props: { children: React.ReactNode }) => React.ReactNode
 

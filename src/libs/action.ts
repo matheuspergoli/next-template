@@ -1,7 +1,7 @@
-import { Session } from 'next-auth'
+import { Session } from "next-auth"
 
-import { getSession } from '@/libs/auth'
-import { Either, left } from '@/libs/either'
+import { getSession } from "@/libs/auth"
+import { Either, left } from "@/libs/either"
 
 interface ActionResultSuccess<S> {
 	message: string
@@ -31,8 +31,8 @@ export const createAuthorizedAction = <S, P = void, E = unknown>(
 		const session = await getSession()
 		if (!session) {
 			return left({
-				message: 'Não autorizado',
-				cause: 'Sessão inválida'
+				message: "Não autorizado",
+				cause: "Sessão inválida"
 			})
 		}
 		return action(params, session)
