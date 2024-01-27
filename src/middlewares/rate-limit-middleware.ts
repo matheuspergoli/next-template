@@ -32,4 +32,6 @@ export const rateLimitMiddleware = async (request: NextRequest) => {
 	if (isRateLimited) {
 		return NextResponse.json({ error: "Too many requests" }, { status: 429 })
 	}
+
+	return NextResponse.next()
 }
