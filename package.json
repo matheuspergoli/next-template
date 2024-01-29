@@ -12,8 +12,6 @@
 		"clean": "find . -name node_modules -o -name .next -type d -prune | xargs rm -rf",
 		"start": "next start",
 		"lint": "next lint",
-		"db:push": "prisma db push",
-		"db:studio": "prisma studio",
 		"postinstall": "prisma generate"
 	},
 	"dependencies": {
@@ -35,12 +33,13 @@
 		"react-dom": "18.2.0",
 		"sharp": "^0.33.2",
 		"tailwind-merge": "^2.2.1",
-		"tailwindcss-animate": "^1.0.7"
+		"tailwindcss-animate": "^1.0.7",
+		"zod": "^3.22.4"
 	},
 	"devDependencies": {
 		"@ianvs/prettier-plugin-sort-imports": "^4.1.1",
 		"@total-typescript/ts-reset": "^0.5.1",
-		"@types/node": "^20.11.8",
+		"@types/node": "^20.11.10",
 		"@types/react": "^18.2.48",
 		"@types/react-dom": "^18.2.18",
 		"@typescript-eslint/eslint-plugin": "^6.19.1",
