@@ -8,12 +8,12 @@ interface Options {
 
 export const rateLimit = (options?: Options) => {
 	const tokenCache = new LRUCache({
-		max: options?.uniqueTokenPerInterval || 50, // número máximo de tokens a serem armazenados no LRU Cache
-		ttl: options?.interval || 60 * 1000 // 1 minuto
+		max: options?.uniqueTokenPerInterval ?? 50, // número máximo de tokens a serem armazenados no LRU Cache
+		ttl: options?.interval ?? 60 * 1000 // 1 minuto
 	})
 
 	return {
-		check: (token: string, limit = options?.limit || 100) => {
+		check: (token: string, limit = options?.limit ?? 100) => {
 			const tokenCount = (tokenCache.get(token) as number[]) || [0]
 
 			if (tokenCount[0] === 0) {

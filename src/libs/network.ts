@@ -42,12 +42,12 @@ type HttpClient = (props?: { baseURL?: string }) => {
 
 export const createHttpClient: HttpClient = (props) => {
 	const client = axios.create({
-		baseURL: props?.baseURL || ""
+		baseURL: props?.baseURL ?? ""
 	})
 
 	const formatError = <T>({ error }: { error: unknown }): HttpResult<T> => {
 		if (isAxiosError(error)) {
-			return left({ error, status: error.response?.status || 500 })
+			return left({ error, status: error.response?.status ?? 500 })
 		}
 		return left({ error, status: 500 })
 	}

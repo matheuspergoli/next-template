@@ -26,7 +26,7 @@ export const useIntersectionObserver = <T extends HTMLElement>(
 		}
 
 		const listen: IntersectionObserverCallback = ([entry]) => {
-			setVisible(entry?.isIntersecting || false)
+			setVisible(entry?.isIntersecting ?? false)
 		}
 
 		const currentRef = ref.current

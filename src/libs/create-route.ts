@@ -6,7 +6,7 @@ import {
 
 import { z } from "zod"
 
-type RouteBuilder<Params extends z.ZodSchema, Search extends z.ZodSchema> = {
+interface RouteBuilder<Params extends z.ZodSchema, Search extends z.ZodSchema> {
 	(params?: z.input<Params>, search?: z.input<Search>): string
 	useParams: () => z.output<Params>
 	useSearchParams: () => z.output<Search>
@@ -17,8 +17,8 @@ export function createRoute<Params extends z.ZodSchema, Search extends z.ZodSche
 	fn: (params: z.input<Params>) => string,
 	options: { params?: Params; search?: Search } = {}
 ): RouteBuilder<Params, Search> {
-	const params = options.params || ({} as Params)
-	const search = options.search || ({} as Search)
+	const params = options.params ?? ({} as Params)
+	const search = options.search ?? ({} as Search)
 
 	const routeBuilder: RouteBuilder<Params, Search> = (params, search) => {
 		const baseUrl = fn(params)

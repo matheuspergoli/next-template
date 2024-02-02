@@ -1,8 +1,6 @@
 import { NextFetchEvent, NextMiddleware, NextRequest, NextResponse } from "next/server"
 
-type MiddlewareMap = {
-	[key: string]: NextMiddleware | NextMiddleware[]
-}
+type MiddlewareMap = Record<string, NextMiddleware | NextMiddleware[]>
 
 export const createMiddleware = (pathMiddlewareMap: MiddlewareMap) => {
 	return async function middleware(request: NextRequest, event: NextFetchEvent) {

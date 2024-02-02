@@ -1,9 +1,9 @@
-type Left<L> = {
+interface Left<L> {
 	readonly tag: "Left"
 	readonly error: L
 }
 
-type Right<R> = {
+interface Right<R> {
 	readonly tag: "Right"
 	readonly value: R
 }

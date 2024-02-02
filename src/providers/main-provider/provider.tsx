@@ -4,7 +4,7 @@ type ProviderFunction = (props: { children: React.ReactNode }) => React.ReactNod
 
 interface CombineProvidersProps {
 	children: React.ReactNode
-	providers: Array<ProviderFunction>
+	providers: ProviderFunction[]
 }
 
 const CombineProviders = ({ children, providers }: CombineProvidersProps) => {
