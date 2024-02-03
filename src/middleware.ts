@@ -3,8 +3,8 @@ import { authorizationMiddleware } from "@/middlewares/authorization-middleware"
 import { loggingMiddleware } from "@/middlewares/logging-middleware"
 import { rateLimitMiddleware } from "@/middlewares/rate-limit-middleware"
 
-export default createMiddleware({
-	"*": [loggingMiddleware, rateLimitMiddleware, authorizationMiddleware]
+export default createMiddleware("sequence", {
+	"*": [loggingMiddleware, authorizationMiddleware, rateLimitMiddleware]
 })
 
 export const config = {

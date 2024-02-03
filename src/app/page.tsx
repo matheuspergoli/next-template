@@ -3,7 +3,7 @@ import { isRight } from "@/libs/either"
 import { placeholderBlurhash } from "@/libs/utils"
 import { BlurImage } from "@/shared/components/blur-image"
 
-export default async function Page() {
+export default function Page() {
 	const message = hello("from Server Action")
 
 	return (
