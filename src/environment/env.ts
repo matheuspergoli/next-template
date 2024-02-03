@@ -1,26 +1,29 @@
-export const env = {
+import { z } from "zod"
+
+const envSchema = z.object({
 	// Server variables
-	PORT: process.env.PORT as string,
-	NODE_ENV: process.env.NODE_ENV as string,
-	VERCEL_URL: process.env.VERCEL_URL as string,
+	PORT: z.string(),
+	NODE_ENV: z.string(),
 
 	// Database variables
-	DATABASE_URL: process.env.DATABASE_URL as string,
+	DATABASE_URL: z.string(),
 
 	// Rate Limit variables
-	RATE_LIMIT_MAX: process.env.RATE_LIMIT_MAX as string,
-	RATE_LIMIT_INTERVAL: process.env.RATE_LIMIT_INTERVAL as string,
+	RATE_LIMIT_MAX: z.string().transform((val) => Number(val)),
+	RATE_LIMIT_INTERVAL: z.string().transform((val) => Number(val)),
 
 	// NextAuth variables
-	NEXTAUTH_URL: process.env.NEXTAUTH_URL as string,
-	NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET as string,
+	NEXTAUTH_URL: z.string(),
+	NEXTAUTH_SECRET: z.string(),
 
 	// Github oauth variables
-	GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID as string,
-	GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET as string,
+	GITHUB_CLIENT_ID: z.string(),
+	GITHUB_CLIENT_SECRET: z.string(),
 
 	// Cloudinary variables
-	CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY as string,
-	CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME as string,
-	CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET as string
-}
+	CLOUDINARY_API_KEY: z.string(),
+	CLOUDINARY_CLOUD_NAME: z.string(),
+	CLOUDINARY_API_SECRET: z.string()
+})
+
+export const env = envSchema.parse(process.env)
