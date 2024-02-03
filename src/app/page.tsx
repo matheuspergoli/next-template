@@ -4,7 +4,7 @@ import { placeholderBlurhash } from "@/libs/utils"
 import { BlurImage } from "@/shared/components/blur-image"
 
 export default async function Page() {
-	const message = await hello({ message: "from Server Action" })
+	const message = hello("from Server Action")
 
 	return (
 		<main className="container mx-auto mt-40 flex flex-col items-center justify-center gap-10">
@@ -18,7 +18,7 @@ export default async function Page() {
 				</p>
 			</section>
 
-			{isRight(message) && <p className="text-xl">{message.value.data}</p>}
+			{isRight(message) && <p className="text-xl">{message.value}</p>}
 
 			<figure className="overflow-hidden rounded-lg">
 				<BlurImage

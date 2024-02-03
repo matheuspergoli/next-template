@@ -1,6 +1,6 @@
 "use client"
 
-import { Routes } from "@/shared/routes"
+import { Routes } from "@/shared/navigation/routes"
 
 interface PageProps {
 	params: typeof Routes.hello.params

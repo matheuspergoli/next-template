@@ -9,7 +9,7 @@ import { Provider } from "@/providers/main-provider"
 import { SessionProvider } from "@/providers/session"
 import { ThemeProvider } from "@/providers/theme"
 import { ThemeMode } from "@/shared/components/theme-mode"
-import { Routes } from "@/shared/routes"
+import { Routes } from "@/shared/navigation/routes"
 import { buttonVariants } from "@/shared/ui/button"
 
 export const metadata: Metadata = {
