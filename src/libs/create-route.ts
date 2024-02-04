@@ -6,8 +6,12 @@ import {
 
 import { z } from "zod"
 
-interface RouteBuilder<Params extends z.ZodSchema, Search extends z.ZodSchema> {
-	(params?: z.input<Params>, search?: z.input<Search>): string
+interface RouteBuilder<
+	Params extends z.ZodSchema,
+	Search extends z.ZodSchema,
+	Options = z.input<Params> & { search: z.input<Search> }
+> {
+	(opts?: Options): string
 	useParams: () => z.output<Params>
 	useSearchParams: () => z.output<Search>
 	params: z.output<Params>
@@ -20,16 +24,18 @@ export function createRoute<Params extends z.ZodSchema, Search extends z.ZodSche
 	const params = options.params ?? ({} as Params)
 	const search = options.search ?? ({} as Search)
 
-	const routeBuilder: RouteBuilder<Params, Search> = (params, search) => {
-		const baseUrl = fn(params)
-		const searchString = search && new URLSearchParams(search).toString()
+	const routeBuilder: RouteBuilder<Params, Search> = (opts) => {
+		const baseUrl = fn(opts)
+		const searchString = search && new URLSearchParams(opts?.search).toString()
 		return [baseUrl, searchString ? `?${searchString}` : ""].join("")
 	}
 
 	routeBuilder.useParams = function useParams(): z.output<Params> {
 		const res = params.safeParse(useNextParams())
 		if (!res.success) {
-			throw new Error(`Invalid route params for route: ${res.error.message}`)
+			throw new Error(`Invalid route params for route: ${res.error.message}`, {
+				cause: "Não mexe nos param seu animal!"
+			})
 		}
 		return res.data
 	}
@@ -37,7 +43,9 @@ export function createRoute<Params extends z.ZodSchema, Search extends z.ZodSche
 	routeBuilder.useSearchParams = function useSearchParams(): z.output<Search> {
 		const res = search.safeParse(convertURLSearchParamsToObject(useNextSearchParams()))
 		if (!res.success) {
-			throw new Error(`Invalid search params for route ${res.error.message}`)
+			throw new Error(`Invalid search params for route ${res.error.message}`, {
+				cause: "Não mexe nos param seu animal!"
+			})
 		}
 		return res.data
 	}

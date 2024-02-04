@@ -2,7 +2,6 @@ import { z } from "zod"
 
 const envSchema = z.object({
 	// Server variables
-	PORT: z.string(),
 	NODE_ENV: z.string(),
 
 	// Database variables

@@ -16,7 +16,7 @@ export default function Error({ error, reset }: ErrorProps) {
 			</div>
 
 			<div className="mb-5 flex flex-col items-center">
-				<p className="text-xl font-semibold">({error.message})</p>
+				<p className="text-xl font-semibold">({error.cause as string})</p>
 				<p>Hash of the Error: {error.digest && <span>({error.digest})</span>}</p>
 			</div>
 			<Button onClick={reset}>Try again</Button>

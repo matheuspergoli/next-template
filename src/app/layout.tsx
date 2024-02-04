@@ -47,7 +47,10 @@ export default function RootLayout({
 
 								<li>
 									<Link
-										href={Routes.hello({ name: "Matheus" }, { surname: "Pergoli" })}
+										href={Routes.hello({
+											name: "Matheus",
+											search: { surname: "Pergoli" }
+										})}
 										className={cn(
 											buttonVariants({ variant: "outline" }),
 											"font-semibold"
