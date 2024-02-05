@@ -4,6 +4,12 @@ type Mode = "parallel" | "sequence"
 type MiddlewareMap = Record<string, NextMiddleware | NextMiddleware[]>
 
 export const createMiddleware = (mode: Mode, pathMiddlewareMap: MiddlewareMap) => {
+	if (mode !== "parallel" && mode !== "sequence") {
+		throw new Error(
+			`Invalid createMiddleware mode: expected "parallel" or "sequence" but got [${mode}] instead.`
+		)
+	}
+
 	return async function middleware(request: NextRequest, event: NextFetchEvent) {
 		const path = request.nextUrl.pathname || "/"
 		let response: Response | NextResponse = NextResponse.next()
@@ -13,9 +19,6 @@ export const createMiddleware = (mode: Mode, pathMiddlewareMap: MiddlewareMap) =
 				const middlewareList = Array.isArray(middlewares) ? middlewares : [middlewares]
 
 				let responses = []
-				if (mode !== "parallel" && mode !== "sequence") {
-					throw new Error(`Invalid createMiddleware mode: ${mode}`)
-				}
 
 				if (mode === "sequence") {
 					for (const mw of middlewareList) {
@@ -41,11 +44,6 @@ export const createMiddleware = (mode: Mode, pathMiddlewareMap: MiddlewareMap) =
 }
 
 function matchPath(key: string, path: string) {
-	if (Array.isArray(key)) {
-		return key.some((pathPattern) => {
-			return typeof pathPattern === "string" && path.startsWith(pathPattern)
-		})
-	}
 	if (typeof key === "string" && key.includes("*")) {
 		return path.startsWith(key.replace("*", ""))
 	}

@@ -8,9 +8,7 @@ interface Right<R> {
 	readonly value: R
 }
 
-declare global {
-	type Either<L, R> = Left<L> | Right<R>
-}
+type Either<L, R> = Left<L> | Right<R>
 
 const left = <L>(error: L): Left<L> => ({
 	tag: "Left",

@@ -1,8 +1,8 @@
 import { z } from "zod"
 
 const envSchema = z.object({
-	// Server variables
-	NODE_ENV: z.string(),
+	// Node variables
+	NODE_ENV: z.enum(["development", "production", "test"]),
 
 	// Database variables
 	DATABASE_URL: z.string(),
