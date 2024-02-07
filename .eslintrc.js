@@ -27,9 +27,6 @@ module.exports = {
 			config: "tailwind.config.ts"
 		}
 	},
-	rules: {
-		"react/prop-types": "off"
-	},
 	ignorePatterns: [
 		"**/.*.js",
 		"**/.*.ts",
