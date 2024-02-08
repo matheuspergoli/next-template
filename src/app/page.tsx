@@ -1,10 +1,10 @@
-import { hello } from "@/actions/hello"
+import { serverAction } from "@/actions/example"
 import { isRight } from "@/libs/either"
 import { placeholderBlurhash } from "@/libs/utils"
 import { BlurImage } from "@/shared/components/blur-image"
 
-export default function Page() {
-	const message = hello("from Server Action")
+export default async function Page() {
+	const user = await serverAction()
 
 	return (
 		<main className="container mx-auto mt-40 flex flex-col items-center justify-center gap-10">
@@ -18,7 +18,11 @@ export default function Page() {
 				</p>
 			</section>
 
-			{isRight(message) && <p className="text-xl">{message.value}</p>}
+			{isRight(user) && (
+				<p className="text-xl">
+					{user.value.name} {user.value.username}
+				</p>
+			)}
 
 			<figure className="overflow-hidden rounded-lg">
 				<BlurImage

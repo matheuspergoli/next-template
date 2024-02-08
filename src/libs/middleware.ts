@@ -31,10 +31,10 @@ export const createMiddleware = (mode: Mode, pathMiddlewareMap: MiddlewareMap) =
 					responses = await Promise.all(middlewareList.map((mw) => mw(request, event)))
 				}
 
-				const lastNonNullResponse = responses.reverse().find((res) => res != null)
+				const firstNonNullResponse = responses.find((res) => res != null)
 
-				if (lastNonNullResponse) {
-					response = lastNonNullResponse
+				if (firstNonNullResponse) {
+					response = firstNonNullResponse
 				}
 			}
 		}
