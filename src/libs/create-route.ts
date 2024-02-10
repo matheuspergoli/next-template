@@ -16,7 +16,6 @@ interface RouteBuilder<
 	useSearchParams: () => z.output<Search>
 	parseSearchParams: (searchParams: unknown) => z.output<Search>
 	parseParams: (params: unknown) => z.output<Params>
-	params: z.output<Params>
 }
 
 export function createRoute<Params extends z.ZodSchema, Search extends z.ZodSchema>(
@@ -71,15 +70,6 @@ export function createRoute<Params extends z.ZodSchema, Search extends z.ZodSche
 		}
 		return res.data
 	}
-
-	routeBuilder.params = undefined as z.output<Params>
-	Object.defineProperty(routeBuilder, "params", {
-		get() {
-			throw new Error(
-				"Routes.[route].params is only for type usage, not runtime. Use it like `typeof Routes.[routes].params`"
-			)
-		}
-	})
 
 	return routeBuilder
 }
