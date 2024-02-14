@@ -1,28 +1,35 @@
 "use server"
 
-import { isLeft, left, right } from "@/libs/either"
-import { createHttpClient } from "@/libs/network"
+import { z } from "zod"
 
-const http = createHttpClient({ baseURL: "https://jsonplaceholder.typicode.com" })
+import { createAction } from "@/libs/action"
 
-interface User {
-	id: number
-	name: string
-	username: string
+const inputSchema = z.object({
+	id: z.number()
+})
+
+const outputSchema = z.object({
+	name: z.string(),
+	username: z.string()
+})
+
+const middleware = async () => {
+	console.log("Logging from action middleware")
+
+	return true
 }
 
-const random = () => Math.floor(Math.random() * 10) + 1
+const action = createAction({ middleware })
 
-export const serverAction = async () => {
-	try {
-		const response = await http.get<User>({ url: `/users/${random()}` })
+export const serverAction = action
+	.input(inputSchema)
+	.output(outputSchema)
+	.query(async ({ input }) => {
+		const response = await fetch(`https://jsonplaceholder.typicode.com/users/${input.id}`)
+		const data = (await response.json()) as z.infer<typeof outputSchema>
 
-		if (isLeft(response)) {
-			return left(response.error)
+		return {
+			name: data.name,
+			username: data.username
 		}
-
-		return right(response.value.data)
-	} catch (error) {
-		return left(error)
-	}
-}
+	})

@@ -68,7 +68,7 @@
 
 @layer base {
 	* {
-		@apply min-w-0 border-border;
+		@apply border-border;
 	}
 
 	body {

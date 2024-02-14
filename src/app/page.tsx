@@ -1,10 +1,11 @@
 import { serverAction } from "@/actions/example"
-import { isRight } from "@/libs/either"
 import { placeholderBlurhash } from "@/libs/utils"
 import { BlurImage } from "@/shared/components/blur-image"
 
+const randomNumber = () => Math.floor(Math.random() * 10) + 1
+
 export default async function Page() {
-	const user = await serverAction()
+	const result = await serverAction({ id: randomNumber() })
 
 	return (
 		<main className="container mx-auto mt-40 flex flex-col items-center justify-center gap-10">
@@ -18,11 +19,9 @@ export default async function Page() {
 				</p>
 			</section>
 
-			{isRight(user) && (
-				<p className="text-xl">
-					{user.value.name} {user.value.username}
-				</p>
-			)}
+			<p className="text-xl">
+				{result.name} {result.username}
+			</p>
 
 			<figure className="overflow-hidden rounded-lg">
 				<BlurImage
