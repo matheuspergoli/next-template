@@ -19,9 +19,12 @@ export default async function Page() {
 				</p>
 			</section>
 
-			<p className="text-xl">
-				{result.name} {result.username}
-			</p>
+			{result.map((item) => (
+				<div key={item.id} className="text-center">
+					<h2 className="text-xl font-bold">{item.name}</h2>
+					<p>{item.username}</p>
+				</div>
+			))}
 
 			<figure className="overflow-hidden rounded-lg">
 				<BlurImage

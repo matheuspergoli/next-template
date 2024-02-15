@@ -2,34 +2,38 @@
 
 import { z } from "zod"
 
-import { createAction } from "@/libs/action"
+import { actionBuilder } from "@/libs/action"
 
 const inputSchema = z.object({
-	id: z.number()
+	id: z.number().min(1).max(10)
 })
 
-const outputSchema = z.object({
-	name: z.string(),
-	username: z.string()
-})
+const outputSchema = z.array(
+	z.object({
+		id: z.number(),
+		name: z.string(),
+		username: z.string()
+	})
+)
 
 const middleware = async () => {
-	console.log("Logging from action middleware")
-
 	return true
 }
 
-const action = createAction({ middleware })
+const context = async () => {
+	const users = await fetch("https://jsonplaceholder.typicode.com/users")
+	const data = await users.json()
+
+	return data as z.infer<typeof outputSchema>
+}
+
+const action = actionBuilder.createWithContext({ middleware, context })
 
 export const serverAction = action
 	.input(inputSchema)
 	.output(outputSchema)
-	.query(async ({ input }) => {
-		const response = await fetch(`https://jsonplaceholder.typicode.com/users/${input.id}`)
-		const data = (await response.json()) as z.infer<typeof outputSchema>
+	.query(async ({ input, ctx }) => {
+		const user = ctx.filter((user) => user.id === input.id)
 
-		return {
-			name: data.name,
-			username: data.username
-		}
+		return user
 	})
