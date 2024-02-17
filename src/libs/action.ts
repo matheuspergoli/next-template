@@ -12,7 +12,7 @@ interface CreateActionOptsWithContext<Context> {
 class ActionBuilder {
 	constructor(private readonly opts?: CreateActionOpts) {}
 
-	query<Data>(handler: () => Promise<Data>) {
+	execute<Data>(handler: () => Promise<Data>) {
 		return async () => {
 			const mwResponse = (await Promise.resolve(this.opts?.middleware?.())) ?? true
 
@@ -41,7 +41,7 @@ class ActionBuilderWithInput<InputSchema extends z.ZodSchema> {
 		private readonly opts?: CreateActionOpts
 	) {}
 
-	query<Data>(handler: (opts: { input: z.input<InputSchema> }) => Promise<Data>) {
+	execute<Data>(handler: (opts: { input: z.input<InputSchema> }) => Promise<Data>) {
 		return async (input: z.input<InputSchema>) => {
 			const parsedInput = this.inputSchema.safeParse(input)
 
@@ -76,7 +76,7 @@ class ActionBuilderWithOutput<OutputSchema extends z.ZodSchema> {
 		private readonly opts?: CreateActionOpts
 	) {}
 
-	query(handler: () => Promise<z.output<OutputSchema>>) {
+	execute(handler: () => Promise<z.output<OutputSchema>>) {
 		return async () => {
 			const mwResponse = (await Promise.resolve(this.opts?.middleware?.())) ?? true
 
@@ -115,7 +115,7 @@ class ActionBuilderWithInputOutput<
 		private readonly opts?: CreateActionOpts
 	) {}
 
-	query(
+	execute(
 		handler: (opts: { input: z.input<InputSchema> }) => Promise<z.output<OutputSchema>>
 	) {
 		return async (input: z.input<InputSchema>) => {
@@ -147,7 +147,7 @@ class ActionBuilderWithInputOutput<
 class ActionBuilderWithContext<Context> {
 	constructor(private readonly opts?: CreateActionOptsWithContext<Context>) {}
 
-	query<Data>(handler: (opts: { ctx: Context }) => Promise<Data>) {
+	execute<Data>(handler: (opts: { ctx: Context }) => Promise<Data>) {
 		return async () => {
 			const mwResponse = (await Promise.resolve(this.opts?.middleware?.())) ?? true
 
@@ -178,7 +178,7 @@ class ActionBuilderWithContextInput<InputSchema extends z.ZodSchema, Context> {
 		private readonly opts?: CreateActionOptsWithContext<Context>
 	) {}
 
-	query<Data>(
+	execute<Data>(
 		handler: (opts: { input: z.input<InputSchema>; ctx: Context }) => Promise<Data>
 	) {
 		return async (input: z.input<InputSchema>) => {
@@ -217,7 +217,7 @@ class ActionBuilderWithContextOutput<OutputSchema extends z.ZodSchema, Context> 
 		private readonly opts?: CreateActionOptsWithContext<Context>
 	) {}
 
-	query(handler: (opts: { ctx: Context }) => Promise<z.output<OutputSchema>>) {
+	execute(handler: (opts: { ctx: Context }) => Promise<z.output<OutputSchema>>) {
 		return async () => {
 			const mwResponse = (await Promise.resolve(this.opts?.middleware?.())) ?? true
 
@@ -259,7 +259,7 @@ class ActionBuilderWithContextInputOutput<
 		private readonly opts?: CreateActionOptsWithContext<Context>
 	) {}
 
-	query(
+	execute(
 		handler: (opts: {
 			input: z.input<InputSchema>
 			ctx: Context

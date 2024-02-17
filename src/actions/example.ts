@@ -1,5 +1,3 @@
-"use server"
-
 import { z } from "zod"
 
 import { actionBuilder } from "@/libs/action"
@@ -32,7 +30,7 @@ const action = actionBuilder.createWithContext({ middleware, context })
 export const serverAction = action
 	.input(inputSchema)
 	.output(outputSchema)
-	.query(async ({ input, ctx }) => {
+	.execute(async ({ input, ctx }) => {
 		const user = ctx.filter((user) => user.id === input.id)
 
 		return user
