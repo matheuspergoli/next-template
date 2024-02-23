@@ -1,306 +1,157 @@
-import { z } from "zod"
+import type { Infer, InferIn, Schema } from "@decs/typeschema"
+import { wrap } from "@decs/typeschema"
 
-interface CreateActionOpts {
-	middleware?: () => Promise<boolean>
-}
-
-interface CreateActionOptsWithContext<Context> {
+interface CreateActionOptions<Context> {
 	middleware?: () => Promise<boolean>
 	context?: () => Promise<Context>
 }
 
-class ActionBuilder {
-	constructor(private readonly opts?: CreateActionOpts) {}
+export const actionBuilder = <Context = never>(
+	options?: CreateActionOptions<Context>
+) => {
+	const executeContext = async () => {
+		return ((await options?.context?.()) ?? null) as Context
+	}
 
-	execute<Data>(handler: () => Promise<Data>) {
-		return async () => {
-			const mwResponse = (await Promise.resolve(this.opts?.middleware?.())) ?? true
+	const executeMiddleware = async () => {
+		const mwResponse = (await Promise.resolve(options?.middleware?.())) ?? true
+		if (!mwResponse) {
+			throw new Error("Middleware failed")
+		}
+	}
 
-			if (!mwResponse) {
-				throw new Error("Middleware failed")
+	const parseSchema = async <S extends Schema>(
+		schema: S,
+		data: unknown,
+		message = "Invalid data"
+	) => {
+		const parsedValues = await wrap(schema).validate(data)
+		if ("issues" in parsedValues) {
+			throw new Error(message)
+		}
+		return parsedValues.data
+	}
+
+	const execute = <Data, Args extends unknown[]>(
+		handler: [Context] extends [never]
+			? (...args: Args) => Promise<Data>
+			: (ctx: Context, ...args: Args) => Promise<Data>
+	) => {
+		return async (...args: Args) => {
+			await executeMiddleware()
+			const ctx = await executeContext()
+			if (ctx) {
+				const data = ((await handler(ctx, ...args)) ?? null) as Data
+				return data
 			}
-
-			const data = ((await handler()) ?? null) as Data
-
+			// @ts-expect-error - resolver problema dos params com tuple
+			const data = ((await handler(...args)) ?? null) as Data
 			return data
 		}
 	}
 
-	input<InputSchema extends z.ZodSchema>(schema: InputSchema) {
-		return new ActionBuilderWithInput<InputSchema>(schema, this.opts)
-	}
-
-	output<OutputSchema extends z.ZodSchema>(schema: OutputSchema) {
-		return new ActionBuilderWithOutput<OutputSchema>(schema, this.opts)
-	}
-}
-
-class ActionBuilderWithInput<InputSchema extends z.ZodSchema> {
-	constructor(
-		private readonly inputSchema: InputSchema,
-		private readonly opts?: CreateActionOpts
-	) {}
-
-	execute<Data>(handler: (opts: { input: z.input<InputSchema> }) => Promise<Data>) {
-		return async (input: z.input<InputSchema>) => {
-			const parsedInput = this.inputSchema.safeParse(input)
-
-			if (!parsedInput.success) {
-				throw new Error("Invalid input")
+	const input = <InputSchema extends Schema>(inputSchema: InputSchema) => {
+		const execute = <Data>(
+			handler: [Context] extends [never]
+				? (opts: { input: InferIn<InputSchema> }) => Promise<Data>
+				: (opts: { ctx: Context; input: InferIn<InputSchema> }) => Promise<Data>
+		) => {
+			return async (input: InferIn<InputSchema>) => {
+				const parsedInput = await parseSchema(inputSchema, input, "Invalid input")
+				await executeMiddleware()
+				const ctx = await executeContext()
+				if (ctx) {
+					const data = ((await handler({ ctx, input: parsedInput })) ?? null) as Data
+					return data
+				}
+				// @ts-expect-error - resolver problema dos params com tuple
+				const data = ((await handler({ input: parsedInput })) ?? null) as Data
+				return data
 			}
-
-			const mwResponse = (await Promise.resolve(this.opts?.middleware?.())) ?? true
-
-			if (!mwResponse) {
-				throw new Error("Middleware failed")
-			}
-
-			const data = ((await handler({ input: parsedInput.data })) ?? null) as Data
-
-			return data
 		}
-	}
 
-	output<OutputSchema extends z.ZodSchema>(schema: OutputSchema) {
-		return new ActionBuilderWithInputOutput<InputSchema, OutputSchema>(
-			this.inputSchema,
-			schema,
-			this.opts
-		)
-	}
-}
-
-class ActionBuilderWithOutput<OutputSchema extends z.ZodSchema> {
-	constructor(
-		private readonly outputSchema: OutputSchema,
-		private readonly opts?: CreateActionOpts
-	) {}
-
-	execute(handler: () => Promise<z.output<OutputSchema>>) {
-		return async () => {
-			const mwResponse = (await Promise.resolve(this.opts?.middleware?.())) ?? true
-
-			if (!mwResponse) {
-				throw new Error("Middleware failed")
+		const output = <OutputSchema extends Schema>(outputSchema: OutputSchema) => {
+			const execute = (
+				handler: [Context] extends [never]
+					? (opts: { input: InferIn<InputSchema> }) => Promise<Infer<OutputSchema>>
+					: (opts: {
+							ctx: Context
+							input: InferIn<InputSchema>
+						}) => Promise<Infer<OutputSchema>>
+			) => {
+				return async (input: InferIn<InputSchema>) => {
+					const parsedInput = await parseSchema(inputSchema, input, "Invalid input")
+					await executeMiddleware()
+					const ctx = await executeContext()
+					if (ctx) {
+						const data = (await handler({ ctx, input: parsedInput })) ?? null
+						const parsedOutput = await parseSchema(outputSchema, data, "Invalid output")
+						return parsedOutput
+					}
+					// @ts-expect-error - resolver problema dos params com tuple
+					const data = (await handler({ input: parsedInput })) ?? null
+					const parsedOutput = await parseSchema(outputSchema, data, "Invalid output")
+					return parsedOutput
+				}
 			}
 
-			const data = (await handler()) ?? null
-
-			const parsedData = this.outputSchema.safeParse(data)
-
-			if (!parsedData.success) {
-				throw new Error("Invalid output")
-			}
-
-			return parsedData.data as z.output<OutputSchema>
+			return { execute }
 		}
+
+		return { execute, output }
 	}
 
-	input<InputSchema extends z.ZodSchema>(schema: InputSchema) {
-		return new ActionBuilderWithInputOutput<InputSchema, OutputSchema>(
-			schema,
-			this.outputSchema,
-			this.opts
-		)
-	}
-}
-
-class ActionBuilderWithInputOutput<
-	InputSchema extends z.ZodSchema,
-	OutputSchema extends z.ZodSchema
-> {
-	constructor(
-		private readonly inputSchema: InputSchema,
-		private readonly outputSchema: OutputSchema,
-		private readonly opts?: CreateActionOpts
-	) {}
-
-	execute(
-		handler: (opts: { input: z.input<InputSchema> }) => Promise<z.output<OutputSchema>>
-	) {
-		return async (input: z.input<InputSchema>) => {
-			const parsedInput = this.inputSchema.safeParse(input)
-
-			if (!parsedInput.success) {
-				throw new Error("Invalid input")
+	const output = <OutputSchema extends Schema>(outputSchema: OutputSchema) => {
+		const execute = <Args extends unknown[]>(
+			handler: [Context] extends [never]
+				? (...args: Args) => Promise<Infer<OutputSchema>>
+				: (ctx: Context, ...args: Args) => Promise<Infer<OutputSchema>>
+		) => {
+			return async (...args: Args) => {
+				await executeMiddleware()
+				const ctx = await executeContext()
+				if (ctx) {
+					const data = (await handler(ctx, ...args)) ?? null
+					const parsedOutput = await parseSchema(outputSchema, data, "Invalid output")
+					return parsedOutput
+				}
+				// @ts-expect-error - resolver problema dos params com tuple
+				const data = (await handler(...args)) ?? null
+				const parsedOutput = await parseSchema(outputSchema, data, "Invalid output")
+				return parsedOutput
 			}
-
-			const mwResponse = (await Promise.resolve(this.opts?.middleware?.())) ?? true
-
-			if (!mwResponse) {
-				throw new Error("Middleware failed")
-			}
-
-			const data = (await handler({ input: parsedInput.data })) ?? null
-
-			const parsedData = this.outputSchema.safeParse(data)
-
-			if (!parsedData.success) {
-				throw new Error("Invalid output")
-			}
-
-			return parsedData.data as z.output<OutputSchema>
 		}
-	}
-}
 
-class ActionBuilderWithContext<Context> {
-	constructor(private readonly opts?: CreateActionOptsWithContext<Context>) {}
-
-	execute<Data>(handler: (opts: { ctx: Context }) => Promise<Data>) {
-		return async () => {
-			const mwResponse = (await Promise.resolve(this.opts?.middleware?.())) ?? true
-
-			if (!mwResponse) {
-				throw new Error("Middleware failed")
+		const input = <InputSchema extends Schema>(inputSchema: InputSchema) => {
+			const execute = (
+				handler: [Context] extends [never]
+					? (opts: { input: InferIn<InputSchema> }) => Promise<Infer<OutputSchema>>
+					: (opts: {
+							ctx: Context
+							input: InferIn<InputSchema>
+						}) => Promise<Infer<OutputSchema>>
+			) => {
+				return async (input: InferIn<InputSchema>) => {
+					const parsedInput = await parseSchema(inputSchema, input, "Invalid input")
+					await executeMiddleware()
+					const ctx = await executeContext()
+					if (ctx) {
+						const data = (await handler({ ctx, input: parsedInput })) ?? null
+						const parsedOutput = await parseSchema(outputSchema, data, "Invalid output")
+						return parsedOutput
+					}
+					// @ts-expect-error - resolver problema dos params com tuple
+					const data = (await handler({ input: parsedInput })) ?? null
+					const parsedOutput = await parseSchema(outputSchema, data, "Invalid output")
+					return parsedOutput
+				}
 			}
 
-			const ctx = ((await this.opts?.context?.()) ?? null) as Context
-
-			const data = ((await handler({ ctx })) ?? null) as Data
-
-			return data
+			return { execute }
 		}
+
+		return { execute, input }
 	}
 
-	input<InputSchema extends z.ZodSchema>(schema: InputSchema) {
-		return new ActionBuilderWithContextInput<InputSchema, Context>(schema, this.opts)
-	}
-
-	output<OutputSchema extends z.ZodSchema>(schema: OutputSchema) {
-		return new ActionBuilderWithContextOutput<OutputSchema, Context>(schema, this.opts)
-	}
+	return { execute, input, output }
 }
-
-class ActionBuilderWithContextInput<InputSchema extends z.ZodSchema, Context> {
-	constructor(
-		private readonly inputSchema: InputSchema,
-		private readonly opts?: CreateActionOptsWithContext<Context>
-	) {}
-
-	execute<Data>(
-		handler: (opts: { input: z.input<InputSchema>; ctx: Context }) => Promise<Data>
-	) {
-		return async (input: z.input<InputSchema>) => {
-			const parsedInput = this.inputSchema.safeParse(input)
-
-			if (!parsedInput.success) {
-				throw new Error("Invalid input")
-			}
-
-			const mwResponse = (await Promise.resolve(this.opts?.middleware?.())) ?? true
-
-			if (!mwResponse) {
-				throw new Error("Middleware failed")
-			}
-
-			const ctx = ((await this.opts?.context?.()) ?? null) as Context
-
-			const data = ((await handler({ input: parsedInput.data, ctx })) ?? null) as Data
-
-			return data
-		}
-	}
-
-	output<OutputSchema extends z.ZodSchema>(schema: OutputSchema) {
-		return new ActionBuilderWithContextInputOutput<InputSchema, OutputSchema, Context>(
-			this.inputSchema,
-			schema,
-			this.opts
-		)
-	}
-}
-
-class ActionBuilderWithContextOutput<OutputSchema extends z.ZodSchema, Context> {
-	constructor(
-		private readonly outputSchema: OutputSchema,
-		private readonly opts?: CreateActionOptsWithContext<Context>
-	) {}
-
-	execute(handler: (opts: { ctx: Context }) => Promise<z.output<OutputSchema>>) {
-		return async () => {
-			const mwResponse = (await Promise.resolve(this.opts?.middleware?.())) ?? true
-
-			if (!mwResponse) {
-				throw new Error("Middleware failed")
-			}
-
-			const ctx = ((await this.opts?.context?.()) ?? null) as Context
-
-			const data = (await handler({ ctx })) ?? null
-
-			const parsedData = this.outputSchema.safeParse(data)
-
-			if (!parsedData.success) {
-				throw new Error("Invalid output")
-			}
-
-			return parsedData.data as z.output<OutputSchema>
-		}
-	}
-
-	input<InputSchema extends z.ZodSchema>(schema: InputSchema) {
-		return new ActionBuilderWithContextInputOutput<InputSchema, OutputSchema, Context>(
-			schema,
-			this.outputSchema,
-			this.opts
-		)
-	}
-}
-
-class ActionBuilderWithContextInputOutput<
-	InputSchema extends z.ZodSchema,
-	OutputSchema extends z.ZodSchema,
-	Context
-> {
-	constructor(
-		private readonly inputSchema: InputSchema,
-		private readonly outputSchema: OutputSchema,
-		private readonly opts?: CreateActionOptsWithContext<Context>
-	) {}
-
-	execute(
-		handler: (opts: {
-			input: z.input<InputSchema>
-			ctx: Context
-		}) => Promise<z.output<OutputSchema>>
-	) {
-		return async (input: z.input<InputSchema>) => {
-			const parsedInput = this.inputSchema.safeParse(input)
-
-			if (!parsedInput.success) {
-				throw new Error("Invalid input")
-			}
-
-			const mwResponse = (await Promise.resolve(this.opts?.middleware?.())) ?? true
-
-			if (!mwResponse) {
-				throw new Error("Middleware failed")
-			}
-
-			const ctx = ((await this.opts?.context?.()) ?? null) as Context
-
-			const data = (await handler({ input: parsedInput.data, ctx })) ?? null
-
-			const parsedData = this.outputSchema.safeParse(data)
-
-			if (!parsedData.success) {
-				throw new Error("Invalid output")
-			}
-
-			return parsedData.data as z.output<OutputSchema>
-		}
-	}
-}
-
-class ActionBuilderRoot {
-	create(opts?: CreateActionOpts) {
-		return new ActionBuilder(opts)
-	}
-
-	createWithContext<Context>(opts?: CreateActionOptsWithContext<Context>) {
-		return new ActionBuilderWithContext<Context>(opts)
-	}
-}
-
-export const actionBuilder = new ActionBuilderRoot()

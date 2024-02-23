@@ -25,7 +25,7 @@ const context = async () => {
 	return data as z.infer<typeof outputSchema>
 }
 
-const action = actionBuilder.createWithContext({ middleware, context })
+const action = actionBuilder({ middleware, context })
 
 export const serverAction = action
 	.input(inputSchema)
