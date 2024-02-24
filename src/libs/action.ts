@@ -1,5 +1,5 @@
-import type { Infer, InferIn, Schema } from "@decs/typeschema"
-import { wrap } from "@decs/typeschema"
+import { wrap } from "@typeschema/all"
+import type { Infer, InferIn, Schema } from "@typeschema/all"
 
 interface CreateActionOptions<Context> {
 	middleware?: () => Promise<boolean>
