@@ -21,8 +21,8 @@ dependencies:
     specifier: ^1.0.2
     version: 1.0.2(@types/react@18.2.58)(react@18.2.0)
   '@typeschema/all':
-    specifier: ^0.13.2
-    version: 0.13.2(zod@3.22.4)
+    specifier: ^0.13.3
+    version: 0.13.3(zod@3.22.4)
   axios:
     specifier: ^1.6.7
     version: 1.6.7
@@ -39,8 +39,8 @@ dependencies:
     specifier: ^10.2.0
     version: 10.2.0
   lucide-react:
-    specifier: ^0.338.0
-    version: 0.338.0(react@18.2.0)
+    specifier: ^0.340.0
+    version: 0.340.0(react@18.2.0)
   next:
     specifier: 14.1.0
     version: 14.1.0(@babel/core@7.23.9)(react-dom@18.2.0)(react@18.2.0)
@@ -134,8 +134,8 @@ packages:
     resolution: {integrity: sha512-lFMjJTrFL3j7L9yBxwYfCq2k6qqwHyzuUl/XBnif78PWTJYyL/dfowQHWE3sp6U6ZzqWiiIZnpTMO96zhkjwtg==}
     engines: {node: '>=6.0.0'}
     dependencies:
-      '@jridgewell/gen-mapping': 0.3.3
-      '@jridgewell/trace-mapping': 0.3.22
+      '@jridgewell/gen-mapping': 0.3.4
+      '@jridgewell/trace-mapping': 0.3.23
 
   /@auth/core@0.27.0:
     resolution: {integrity: sha512-3bydnRJIM/Al6mkYmb53MsC+6G8ojw3lLPzwgVnX4dCo6N2lrib6Wq6r0vxZIhuHGjLObqqtUfpeaEj5aeTHFg==}
@@ -211,8 +211,8 @@ packages:
     engines: {node: '>=6.9.0'}
     dependencies:
       '@babel/types': 7.23.9
-      '@jridgewell/gen-mapping': 0.3.3
-      '@jridgewell/trace-mapping': 0.3.22
+      '@jridgewell/gen-mapping': 0.3.4
+      '@jridgewell/trace-mapping': 0.3.23
       jsesc: 2.5.2
 
   /@babel/helper-compilation-targets@7.23.6:
@@ -661,13 +661,13 @@ packages:
       wrap-ansi: 8.1.0
       wrap-ansi-cjs: /wrap-ansi@7.0.0
 
-  /@jridgewell/gen-mapping@0.3.3:
-    resolution: {integrity: sha512-HLhSWOLRi875zjjMG/r+Nv0oCW8umGb0BgEhyX3dDX3egwZtB8PqLnjz3yedt8R5StBrzcg4aBpnh8UA9D1BoQ==}
+  /@jridgewell/gen-mapping@0.3.4:
+    resolution: {integrity: sha512-Oud2QPM5dHviZNn4y/WhhYKSXksv+1xLEIsNrAbGcFzUN3ubqWRFT5gwPchNc5NuzILOU4tPBDTZ4VwhL8Y7cw==}
     engines: {node: '>=6.0.0'}
     dependencies:
       '@jridgewell/set-array': 1.1.2
       '@jridgewell/sourcemap-codec': 1.4.15
-      '@jridgewell/trace-mapping': 0.3.22
+      '@jridgewell/trace-mapping': 0.3.23
 
   /@jridgewell/resolve-uri@3.1.2:
     resolution: {integrity: sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw==}
@@ -680,8 +680,8 @@ packages:
   /@jridgewell/sourcemap-codec@1.4.15:
     resolution: {integrity: sha512-eF2rxCRulEKXHTRiDrDy6erMYWqNw4LPdQ8UQA4huuxaQsVeRPFl2oM8oDGxMFhJUWZf9McpLtJasDDZb/Bpeg==}
 
-  /@jridgewell/trace-mapping@0.3.22:
-    resolution: {integrity: sha512-Wf963MzWtA2sjrNt+g18IAln9lKnlRp+K2eH4jjIoF1wYeq3aMREpG09xhlhdzS0EjwU7qmUJYangWa+151vZw==}
+  /@jridgewell/trace-mapping@0.3.23:
+    resolution: {integrity: sha512-9/4foRoUKp8s96tSkh8DlAAc5A0Ty8vLXld+l9gjKKY6ckwI8G15f0hskGmuLZu78ZlGa1vtsfOa+lnB4vG6Jg==}
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.4.15
@@ -1370,14 +1370,15 @@ packages:
   /@types/scheduler@0.16.8:
     resolution: {integrity: sha512-WZLiwShhwLRmeV6zH+GkbOFT6Z6VklCItrDioxUnv+u4Ll+8vKeFySoFyK/0ctcRpOmwAicELfmys1sDc/Rw+A==}
 
-  /@types/semver@7.5.7:
-    resolution: {integrity: sha512-/wdoPq1QqkSj9/QOeKkFquEuPzQbHTWAMPH/PaUMB+JuR31lXhlWXRZ52IpfDYVlDOUBvX09uBrPwxGT1hjNBg==}
+  /@types/semver@7.5.8:
+    resolution: {integrity: sha512-I8EUhyrgfLrcTkzV3TSsGyl1tSuPrEDzr0yd5m90UgNxQkyDXULk3b6MlQqTCpZpNtWe1K0hzclnZkTcLBe2UQ==}
     dev: true
 
-  /@typeschema/all@0.13.2(zod@3.22.4):
-    resolution: {integrity: sha512-m2E/dFm2tLA+RdWZY4nzK+X4erC9K3xutNv4i2wVyUjBCAi1fFDv03g71RFIeSmI/+E1kIVPSBNmUqsSlECQtw==}
+  /@typeschema/all@0.13.3(zod@3.22.4):
+    resolution: {integrity: sha512-vgCWwTz2zBetEtJ/wmcQTWebJvHv01RhM4TLV3dDbsr83MCmnKeowYqG7hGDYQ2RBaYWN84M2ugPz9lZfgF5/w==}
     dependencies:
       '@typeschema/arktype': 0.13.1
+      '@typeschema/class-validator': 0.1.0
       '@typeschema/core': 0.13.1
       '@typeschema/deepkit': 0.13.1
       '@typeschema/effect': 0.13.1
@@ -1385,7 +1386,7 @@ packages:
       '@typeschema/io-ts': 0.13.1
       '@typeschema/joi': 0.13.1
       '@typeschema/json': 0.13.1
-      '@typeschema/main': 0.13.2(@typeschema/arktype@0.13.1)(@typeschema/deepkit@0.13.1)(@typeschema/effect@0.13.1)(@typeschema/function@0.13.1)(@typeschema/io-ts@0.13.1)(@typeschema/joi@0.13.1)(@typeschema/json@0.13.1)(@typeschema/ow@0.13.1)(@typeschema/runtypes@0.13.1)(@typeschema/superstruct@0.13.1)(@typeschema/typebox@0.13.1)(@typeschema/valibot@0.13.1)(@typeschema/yup@0.13.1)(@typeschema/zod@0.13.1)
+      '@typeschema/main': 0.13.3(@typeschema/arktype@0.13.1)(@typeschema/class-validator@0.1.0)(@typeschema/deepkit@0.13.1)(@typeschema/effect@0.13.1)(@typeschema/function@0.13.1)(@typeschema/io-ts@0.13.1)(@typeschema/joi@0.13.1)(@typeschema/json@0.13.1)(@typeschema/ow@0.13.1)(@typeschema/runtypes@0.13.1)(@typeschema/superstruct@0.13.1)(@typeschema/typebox@0.13.1)(@typeschema/valibot@0.13.1)(@typeschema/yup@0.13.1)(@typeschema/zod@0.13.1)
       '@typeschema/ow': 0.13.1
       '@typeschema/runtypes': 0.13.1
       '@typeschema/superstruct': 0.13.1
@@ -1402,6 +1403,7 @@ packages:
       - '@types/json-schema'
       - ajv
       - arktype
+      - class-validator
       - effect
       - fp-ts
       - io-ts
@@ -1421,6 +1423,19 @@ packages:
       arktype: ^1.0.29-alpha
     peerDependenciesMeta:
       arktype:
+        optional: true
+    dependencies:
+      '@typeschema/core': 0.13.1
+    transitivePeerDependencies:
+      - '@types/json-schema'
+    dev: false
+
+  /@typeschema/class-validator@0.1.0:
+    resolution: {integrity: sha512-dpinekQTR7tp2+DJUvPetgbji0WEYuXgQQ/dU4A/MlHF0w/C/0R0OJ0ygGS7Sy6aTdDVuo8HctmNQgBuYQYF5g==}
+    peerDependencies:
+      class-validator: ^0.14.1
+    peerDependenciesMeta:
+      class-validator:
         optional: true
     dependencies:
       '@typeschema/core': 0.13.1
@@ -1516,10 +1531,11 @@ packages:
       - '@types/json-schema'
     dev: false
 
-  /@typeschema/main@0.13.2(@typeschema/arktype@0.13.1)(@typeschema/deepkit@0.13.1)(@typeschema/effect@0.13.1)(@typeschema/function@0.13.1)(@typeschema/io-ts@0.13.1)(@typeschema/joi@0.13.1)(@typeschema/json@0.13.1)(@typeschema/ow@0.13.1)(@typeschema/runtypes@0.13.1)(@typeschema/superstruct@0.13.1)(@typeschema/typebox@0.13.1)(@typeschema/valibot@0.13.1)(@typeschema/yup@0.13.1)(@typeschema/zod@0.13.1):
-    resolution: {integrity: sha512-K6DfMxtPL1U+Awkn2k8D48mjVy2Hj3tYHOx9wm2/GdemmIC8ai18MUwoQoSWDqCWLQ3UR2dVuyy8dAeT1NhPcg==}
+  /@typeschema/main@0.13.3(@typeschema/arktype@0.13.1)(@typeschema/class-validator@0.1.0)(@typeschema/deepkit@0.13.1)(@typeschema/effect@0.13.1)(@typeschema/function@0.13.1)(@typeschema/io-ts@0.13.1)(@typeschema/joi@0.13.1)(@typeschema/json@0.13.1)(@typeschema/ow@0.13.1)(@typeschema/runtypes@0.13.1)(@typeschema/superstruct@0.13.1)(@typeschema/typebox@0.13.1)(@typeschema/valibot@0.13.1)(@typeschema/yup@0.13.1)(@typeschema/zod@0.13.1):
+    resolution: {integrity: sha512-nswI/juC8DJLnu1+rWrtUYw5jThgyxEcPVACbBFlYDCDYOOb1hKDqDNU1lKcMT+4jGKisBjaIhcc+CuuRrLBSA==}
     peerDependencies:
       '@typeschema/arktype': 0.13.1
+      '@typeschema/class-validator': 0.1.0
       '@typeschema/deepkit': 0.13.1
       '@typeschema/effect': 0.13.1
       '@typeschema/function': 0.13.1
@@ -1535,6 +1551,8 @@ packages:
       '@typeschema/zod': 0.13.1
     peerDependenciesMeta:
       '@typeschema/arktype':
+        optional: true
+      '@typeschema/class-validator':
         optional: true
       '@typeschema/deepkit':
         optional: true
@@ -1564,6 +1582,7 @@ packages:
         optional: true
     dependencies:
       '@typeschema/arktype': 0.13.1
+      '@typeschema/class-validator': 0.1.0
       '@typeschema/core': 0.13.1
       '@typeschema/deepkit': 0.13.1
       '@typeschema/effect': 0.13.1
@@ -1852,7 +1871,7 @@ packages:
     dependencies:
       '@eslint-community/eslint-utils': 4.4.0(eslint@8.57.0)
       '@types/json-schema': 7.0.15
-      '@types/semver': 7.5.7
+      '@types/semver': 7.5.8
       '@typescript-eslint/scope-manager': 7.0.2
       '@typescript-eslint/types': 7.0.2
       '@typescript-eslint/typescript-estree': 7.0.2(typescript@5.3.3)
@@ -3492,8 +3511,8 @@ packages:
     dependencies:
       yallist: 4.0.0
 
-  /lucide-react@0.338.0(react@18.2.0):
-    resolution: {integrity: sha512-Uq+vcn/gp6l01GpDH8SxY6eAvO6Ur2bSU39NxEEJt35OotnVCH5q26TZEVPtJf23gTAncXd3DJQqcezIm6HA7w==}
+  /lucide-react@0.340.0(react@18.2.0):
+    resolution: {integrity: sha512-mWzYhbyy2d+qKuKHh+GWElPwa+kIquTnKbmSLGWOuZy+bjfZCkYD8DQWVFlqI4mQwc4HNxcqcOvtQ7ZS2PwURg==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0
     dependencies:
@@ -3874,7 +3893,7 @@ packages:
     dependencies:
       lilconfig: 3.1.1
       postcss: 8.4.35
-      yaml: 2.3.4
+      yaml: 2.4.0
 
   /postcss-nested@6.0.1(postcss@8.4.35):
     resolution: {integrity: sha512-mEp4xPMi5bSWiMbsgoPfcP74lsWLHkQbZc3sY+jWYd65CUwXrUaTp0fmNpa01ZcETKlIgUdFN/MpS2xZtqL9dQ==}
@@ -4423,7 +4442,7 @@ packages:
     engines: {node: '>=16 || 14 >=14.17'}
     hasBin: true
     dependencies:
-      '@jridgewell/gen-mapping': 0.3.3
+      '@jridgewell/gen-mapping': 0.3.4
       commander: 4.1.1
       glob: 10.3.10
       lines-and-columns: 1.2.4
@@ -4758,9 +4777,10 @@ packages:
   /yallist@4.0.0:
     resolution: {integrity: sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A==}
 
-  /yaml@2.3.4:
-    resolution: {integrity: sha512-8aAvwVUSHpfEqTQ4w/KMlf3HcRdt50E5ODIQJBw1fQ5RL34xabzxtUlzTXVqc4rkZsPbvrXKWnABCD7kWSmocA==}
+  /yaml@2.4.0:
+    resolution: {integrity: sha512-j9iR8g+/t0lArF4V6NE/QCfT+CO7iLqrXAHZbJdo+LfjqP1vR8Fg5bSiaq6Q2lOD1AUEVrEVIgABvBFYojJVYQ==}
     engines: {node: '>= 14'}
+    hasBin: true
 
   /yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}

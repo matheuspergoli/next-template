@@ -20,16 +20,16 @@ export const actionBuilder = <Context = never>(
 		}
 	}
 
-	const parseSchema = async <S extends Schema>(
+	const parseSchema = async <S extends Schema, T>(
 		schema: S,
-		data: unknown,
+		data: T,
 		message = "Invalid data"
 	) => {
 		const parsedValues = await wrap(schema).validate(data)
 		if ("issues" in parsedValues) {
 			throw new Error(message)
 		}
-		return parsedValues.data
+		return parsedValues.data as T
 	}
 
 	const execute = <Data, Args extends unknown[]>(
