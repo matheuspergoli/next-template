@@ -15,7 +15,7 @@ const outputSchema = z.array(
 )
 
 const middleware = async () => {
-	return false
+	return true
 }
 
 const action = actionBuilder({ middleware })
