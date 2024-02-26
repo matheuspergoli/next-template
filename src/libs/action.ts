@@ -1,47 +1,50 @@
-import { wrap } from "@typeschema/all"
-import type { Infer, InferIn, Schema } from "@typeschema/all"
+import { z } from "zod"
 
 export const actionBuilder = () => {
-	const parseSchema = async <S extends Schema>(
+	const parseSchema = <S extends z.ZodSchema, T>(
 		schema: S,
-		data: unknown,
+		data: T,
 		message = "Invalid data"
 	) => {
-		const parsedValues = await wrap(schema).validate(data)
-		if ("issues" in parsedValues) {
-			throw new Error(message)
+		const parsedValues = schema.safeParse(data)
+		if (!parsedValues.success) {
+			const path = parsedValues.error.issues[0]?.path.toString().toUpperCase()
+			const errorMessage = parsedValues.error.issues[0]?.message
+			throw new Error(`${message} for [${path}]: ${errorMessage}`)
 		}
-		return parsedValues.data
+		return parsedValues.data as T
 	}
 
 	const execute = <Data, Args extends unknown[]>(
 		handler: (...args: Args) => Promise<Data>
 	) => {
 		return async (...args: Args) => {
-			const data = ((await handler(...args)) ?? null) as Data
+			const data = (await handler(...args)) as Data
 			return data
 		}
 	}
 
-	const input = <InputSchema extends Schema>(inputSchema: InputSchema) => {
+	const input = <InputSchema extends z.ZodSchema>(inputSchema: InputSchema) => {
 		const execute = <Data>(
-			handler: (opts: { input: InferIn<InputSchema> }) => Promise<Data>
+			handler: (opts: { input: z.input<InputSchema> }) => Promise<Data>
 		) => {
-			return async (input: InferIn<InputSchema>) => {
-				const parsedInput = await parseSchema(inputSchema, input, "Invalid input")
-				const data = ((await handler({ input: parsedInput })) ?? null) as Data
+			return async (input: z.input<InputSchema>) => {
+				const parsedInput = parseSchema(inputSchema, input, "Invalid Input")
+				const data = (await handler({ input: parsedInput })) as Data
 				return data
 			}
 		}
 
-		const output = <OutputSchema extends Schema>(outputSchema: OutputSchema) => {
+		const output = <OutputSchema extends z.ZodSchema>(outputSchema: OutputSchema) => {
 			const execute = (
-				handler: (opts: { input: InferIn<InputSchema> }) => Promise<Infer<OutputSchema>>
+				handler: (opts: {
+					input: z.input<InputSchema>
+				}) => Promise<z.output<OutputSchema>>
 			) => {
-				return async (input: InferIn<InputSchema>) => {
-					const parsedInput = await parseSchema(inputSchema, input, "Invalid input")
-					const data = (await handler({ input: parsedInput })) ?? null
-					const parsedOutput = await parseSchema(outputSchema, data, "Invalid output")
+				return async (input: z.input<InputSchema>) => {
+					const parsedInput = parseSchema(inputSchema, input, "Invalid Input")
+					const data = await handler({ input: parsedInput })
+					const parsedOutput = parseSchema(outputSchema, data, "Invalid Output")
 					return parsedOutput
 				}
 			}
@@ -52,25 +55,27 @@ export const actionBuilder = () => {
 		return { execute, output }
 	}
 
-	const output = <OutputSchema extends Schema>(outputSchema: OutputSchema) => {
+	const output = <OutputSchema extends z.ZodSchema>(outputSchema: OutputSchema) => {
 		const execute = <Args extends unknown[]>(
-			handler: (...args: Args) => Promise<Infer<OutputSchema>>
+			handler: (...args: Args) => Promise<z.output<OutputSchema>>
 		) => {
 			return async (...args: Args) => {
-				const data = (await handler(...args)) ?? null
-				const parsedOutput = await parseSchema(outputSchema, data, "Invalid output")
+				const data = await handler(...args)
+				const parsedOutput = parseSchema(outputSchema, data, "Invalid Output")
 				return parsedOutput
 			}
 		}
 
-		const input = <InputSchema extends Schema>(inputSchema: InputSchema) => {
+		const input = <InputSchema extends z.ZodSchema>(inputSchema: InputSchema) => {
 			const execute = (
-				handler: (opts: { input: InferIn<InputSchema> }) => Promise<Infer<OutputSchema>>
+				handler: (opts: {
+					input: z.input<InputSchema>
+				}) => Promise<z.output<OutputSchema>>
 			) => {
-				return async (input: InferIn<InputSchema>) => {
-					const parsedInput = await parseSchema(inputSchema, input, "Invalid input")
-					const data = (await handler({ input: parsedInput })) ?? null
-					const parsedOutput = await parseSchema(outputSchema, data, "Invalid output")
+				return async (input: z.input<InputSchema>) => {
+					const parsedInput = parseSchema(inputSchema, input, "Invalid Input")
+					const data = await handler({ input: parsedInput })
+					const parsedOutput = parseSchema(outputSchema, data, "Invalid Output")
 					return parsedOutput
 				}
 			}
