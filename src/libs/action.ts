@@ -4,7 +4,7 @@ interface ActionBuilderOptions {
 	middleware?: () => Promise<boolean>
 }
 
-export const actionBuilder = (options: ActionBuilderOptions) => {
+export const actionBuilder = (options?: ActionBuilderOptions) => {
 	const executeMiddleware = async () => {
 		const mwResponse = (await Promise.resolve(options?.middleware?.())) ?? true
 		if (!mwResponse) {

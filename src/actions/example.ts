@@ -14,7 +14,11 @@ const outputSchema = z.array(
 	})
 )
 
-const action = actionBuilder()
+const middleware = async () => {
+	return false
+}
+
+const action = actionBuilder({ middleware })
 
 export const serverAction = action
 	.input(inputSchema)
