@@ -14,24 +14,13 @@ const outputSchema = z.array(
 	})
 )
 
-const middleware = async () => {
-	return true
-}
-
-const context = async () => {
-	const users = await fetch("https://jsonplaceholder.typicode.com/users")
-	const data = await users.json()
-
-	return data as z.infer<typeof outputSchema>
-}
-
-const action = actionBuilder({ middleware, context })
+const action = actionBuilder()
 
 export const serverAction = action
 	.input(inputSchema)
 	.output(outputSchema)
-	.execute(async ({ input, ctx }) => {
-		const user = ctx.filter((user) => user.id === input.id)
-
-		return user
+	.execute(async ({ input }) => {
+		const users = await fetch("https://jsonplaceholder.typicode.com/users")
+		const data = (await users.json()) as z.infer<typeof outputSchema>
+		return data.filter((user) => user.id === input.id)
 	})
