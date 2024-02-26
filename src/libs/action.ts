@@ -1,6 +1,17 @@
 import { z } from "zod"
 
-export const actionBuilder = () => {
+interface ActionBuilderOptions {
+	middleware?: () => Promise<boolean>
+}
+
+export const actionBuilder = (options: ActionBuilderOptions) => {
+	const executeMiddleware = async () => {
+		const mwResponse = (await Promise.resolve(options?.middleware?.())) ?? true
+		if (!mwResponse) {
+			throw new Error("Middleware failed")
+		}
+	}
+
 	const parseSchema = <S extends z.ZodSchema, T>(
 		schema: S,
 		data: T,
@@ -19,6 +30,7 @@ export const actionBuilder = () => {
 		handler: (...args: Args) => Promise<Data>
 	) => {
 		return async (...args: Args) => {
+			await executeMiddleware()
 			const data = (await handler(...args)) as Data
 			return data
 		}
@@ -29,6 +41,7 @@ export const actionBuilder = () => {
 			handler: (opts: { input: z.input<InputSchema> }) => Promise<Data>
 		) => {
 			return async (input: z.input<InputSchema>) => {
+				await executeMiddleware()
 				const parsedInput = parseSchema(inputSchema, input, "Invalid Input")
 				const data = (await handler({ input: parsedInput })) as Data
 				return data
@@ -42,6 +55,7 @@ export const actionBuilder = () => {
 				}) => Promise<z.output<OutputSchema>>
 			) => {
 				return async (input: z.input<InputSchema>) => {
+					await executeMiddleware()
 					const parsedInput = parseSchema(inputSchema, input, "Invalid Input")
 					const data = await handler({ input: parsedInput })
 					const parsedOutput = parseSchema(outputSchema, data, "Invalid Output")
@@ -60,6 +74,7 @@ export const actionBuilder = () => {
 			handler: (...args: Args) => Promise<z.output<OutputSchema>>
 		) => {
 			return async (...args: Args) => {
+				await executeMiddleware()
 				const data = await handler(...args)
 				const parsedOutput = parseSchema(outputSchema, data, "Invalid Output")
 				return parsedOutput
@@ -73,6 +88,7 @@ export const actionBuilder = () => {
 				}) => Promise<z.output<OutputSchema>>
 			) => {
 				return async (input: z.input<InputSchema>) => {
+					await executeMiddleware()
 					const parsedInput = parseSchema(inputSchema, input, "Invalid Input")
 					const data = await handler({ input: parsedInput })
 					const parsedOutput = parseSchema(outputSchema, data, "Invalid Output")
