@@ -27,7 +27,7 @@ export const uploadToCloudinary = async ({ formData }: { formData: FormData }) =
 		}
 	})
 
-	return { url: result.secure_url, public_id: result.public_id }
+	return { url: result.secure_url, publicId: result.public_id }
 }
 
 export const uploadManyToCloudinary = async ({ formData }: { formData: FormData }) => {
@@ -51,7 +51,7 @@ export const uploadManyToCloudinary = async ({ formData }: { formData: FormData 
 				}
 			})
 
-			return { url: result.secure_url, public_id: result.public_id }
+			return { url: result.secure_url, publicId: result.public_id }
 		})
 	)
 
