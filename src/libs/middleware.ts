@@ -45,7 +45,8 @@ export const createMiddleware = (mode: Mode, pathMiddlewareMap: MiddlewareMap) =
 
 function matchPath(key: string, path: string) {
 	if (typeof key === "string" && key.includes("*")) {
-		return path.startsWith(key.replace("*", ""))
+		const normalizedKey = key.replace("*", "")
+		return path.startsWith(normalizedKey)
 	}
 	return path === key
 }
