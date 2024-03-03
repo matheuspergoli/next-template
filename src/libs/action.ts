@@ -1,15 +1,14 @@
 import { z } from "zod"
 
-interface ActionBuilderOptions {
-	middleware?: () => Promise<boolean>
+type MaybePromise<T> = Promise<T> | T
+
+interface ActionBuilderOptions<Context> {
+	middleware?: (parsedInput: unknown) => MaybePromise<Context>
 }
 
-export const actionBuilder = (options?: ActionBuilderOptions) => {
-	const executeMiddleware = async () => {
-		const mwResponse = (await Promise.resolve(options?.middleware?.())) ?? true
-		if (!mwResponse) {
-			throw new Error("Middleware failed")
-		}
+export const actionBuilder = <Context>(options?: ActionBuilderOptions<Context>) => {
+	const executeMiddleware = async (args: unknown) => {
+		return (await Promise.resolve(options?.middleware?.(args))) as Context
 	}
 
 	const parseSchema = <S extends z.ZodSchema, T>(
@@ -27,23 +26,23 @@ export const actionBuilder = (options?: ActionBuilderOptions) => {
 	}
 
 	const execute = <Data, Args extends unknown[]>(
-		handler: (...args: Args) => Promise<Data>
+		handler: (ctx: Context, ...args: Args) => Promise<Data>
 	) => {
 		return async (...args: Args) => {
-			await executeMiddleware()
-			const data = (await handler(...args)) as Data
+			const ctx = await executeMiddleware(args)
+			const data = (await handler(ctx, ...args)) as Data
 			return data
 		}
 	}
 
 	const input = <InputSchema extends z.ZodSchema>(inputSchema: InputSchema) => {
 		const execute = <Data>(
-			handler: (opts: { input: z.input<InputSchema> }) => Promise<Data>
+			handler: (opts: { input: z.input<InputSchema>; ctx: Context }) => Promise<Data>
 		) => {
 			return async (input: z.input<InputSchema>) => {
-				await executeMiddleware()
 				const parsedInput = parseSchema(inputSchema, input, "Invalid Input")
-				const data = (await handler({ input: parsedInput })) as Data
+				const ctx = await executeMiddleware(parsedInput)
+				const data = (await handler({ input: parsedInput, ctx })) as Data
 				return data
 			}
 		}
@@ -52,12 +51,13 @@ export const actionBuilder = (options?: ActionBuilderOptions) => {
 			const execute = (
 				handler: (opts: {
 					input: z.input<InputSchema>
+					ctx: Context
 				}) => Promise<z.output<OutputSchema>>
 			) => {
 				return async (input: z.input<InputSchema>) => {
-					await executeMiddleware()
 					const parsedInput = parseSchema(inputSchema, input, "Invalid Input")
-					const data = await handler({ input: parsedInput })
+					const ctx = await executeMiddleware(parsedInput)
+					const data = await handler({ input: parsedInput, ctx })
 					const parsedOutput = parseSchema(outputSchema, data, "Invalid Output")
 					return parsedOutput
 				}
@@ -71,11 +71,11 @@ export const actionBuilder = (options?: ActionBuilderOptions) => {
 
 	const output = <OutputSchema extends z.ZodSchema>(outputSchema: OutputSchema) => {
 		const execute = <Args extends unknown[]>(
-			handler: (...args: Args) => Promise<z.output<OutputSchema>>
+			handler: (ctx: Context, ...args: Args) => Promise<z.output<OutputSchema>>
 		) => {
 			return async (...args: Args) => {
-				await executeMiddleware()
-				const data = await handler(...args)
+				const ctx = await executeMiddleware(args)
+				const data = await handler(ctx, ...args)
 				const parsedOutput = parseSchema(outputSchema, data, "Invalid Output")
 				return parsedOutput
 			}
@@ -85,12 +85,13 @@ export const actionBuilder = (options?: ActionBuilderOptions) => {
 			const execute = (
 				handler: (opts: {
 					input: z.input<InputSchema>
+					ctx: Context
 				}) => Promise<z.output<OutputSchema>>
 			) => {
 				return async (input: z.input<InputSchema>) => {
-					await executeMiddleware()
 					const parsedInput = parseSchema(inputSchema, input, "Invalid Input")
-					const data = await handler({ input: parsedInput })
+					const ctx = await executeMiddleware(parsedInput)
+					const data = await handler({ input: parsedInput, ctx })
 					const parsedOutput = parseSchema(outputSchema, data, "Invalid Output")
 					return parsedOutput
 				}
