@@ -12,7 +12,7 @@ export default function Page({ params, searchParams }: PageProps) {
 	return (
 		<main className="container mt-10">
 			<h1 className="text-center text-2xl font-bold">
-				{name} {surname}
+				Hello, {name} {surname} !
 			</h1>
 		</main>
 	)

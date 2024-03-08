@@ -13,7 +13,7 @@ import { Routes } from "@/shared/navigation/routes"
 import { buttonVariants } from "@/shared/ui/button"
 
 export const metadata: Metadata = {
-	title: "Template Next.js 14 App Router",
+	title: "Next.js 14 App Router Template",
 	description: "Created by Matheus Pergoli"
 }
 
