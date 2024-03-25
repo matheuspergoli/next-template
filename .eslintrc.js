@@ -1,3 +1,4 @@
+
 /** @type {import("eslint").Linter.Config} */
 module.exports = {
 	extends: [
@@ -6,6 +7,7 @@ module.exports = {
 		"plugin:@typescript-eslint/strict",
 		"plugin:@typescript-eslint/stylistic"
 	],
+	plugins: ["filenames"],
 	parser: "@typescript-eslint/parser",
 	parserOptions: {
 		project: true,
@@ -28,6 +30,7 @@ module.exports = {
 		}
 	},
 	rules: {
+		"filenames/match-regex": ["error", "^[a-z-.]+$", true],
 		"@typescript-eslint/no-unused-vars": [
 			"error",
 			{
