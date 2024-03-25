@@ -1,5 +1,4 @@
 import { serverAction } from "@/actions/example"
-import { placeholderBlurhash } from "@/libs/utils"
 import { BlurImage } from "@/shared/components/blur-image"
 import { Badge } from "@/shared/ui/badge"
 
@@ -46,7 +45,6 @@ export default async function Page() {
 					alt="Blurhash"
 					src={"https://avatars.githubusercontent.com/u/14985020?v=4"}
 					placeholder="blur"
-					blurDataURL={placeholderBlurhash}
 					className="w-60 rounded-lg"
 				/>
 			</figure>

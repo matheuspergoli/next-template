@@ -3,7 +3,7 @@
 import React from "react"
 import Image from "next/image"
 
-import { cn } from "@/libs/utils"
+import { cn, placeholderBlurhash } from "@/libs/utils"
 
 interface BlurImageProps extends React.ComponentProps<typeof Image> {
 	alt: string
@@ -11,7 +11,7 @@ interface BlurImageProps extends React.ComponentProps<typeof Image> {
 }
 
 export const BlurImage = React.forwardRef<HTMLImageElement, BlurImageProps>(
-	({ alt, className, ...rest }, ref) => {
+	({ alt, className, blurDataURL, ...rest }, ref) => {
 		const [loading, setLoading] = React.useState(true)
 
 		return (
@@ -19,6 +19,7 @@ export const BlurImage = React.forwardRef<HTMLImageElement, BlurImageProps>(
 				{...rest}
 				alt={alt}
 				ref={ref}
+				blurDataURL={blurDataURL ?? placeholderBlurhash}
 				className={cn(
 					"duration-500 ease-in-out",
 					loading ? "scale-125 blur-lg" : "scale-100 blur-0",

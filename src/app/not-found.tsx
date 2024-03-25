@@ -1,4 +1,3 @@
-import { placeholderBlurhash } from "@/libs/utils"
 import { BlurImage } from "@/shared/components/blur-image"
 
 export default function NotFound() {
@@ -10,7 +9,6 @@ export default function NotFound() {
 				alt="missing site"
 				src="https://illustrations.popsy.co/gray/timed-out-error.svg"
 				placeholder="blur"
-				blurDataURL={placeholderBlurhash}
 				width={400}
 				height={400}
 			/>
