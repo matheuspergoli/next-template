@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/libs/utils"
 import { ButtonProps, buttonVariants } from "@/shared/ui/button"
 
-type ActiveLinkProps = LinkProps & {
+interface ActiveLinkProps extends LinkProps {
 	children: React.ReactNode
 	className?: string
 }
