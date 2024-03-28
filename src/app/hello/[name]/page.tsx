@@ -10,7 +10,7 @@ export default function Page({ params, searchParams }: PageProps) {
 	const { name } = Routes.hello.parseParams(params)
 
 	return (
-		<main className="container mt-10">
+		<main className="container mx-auto mt-10">
 			<h1 className="text-center text-2xl font-bold">
 				Hello, {name} {surname} !
 			</h1>
