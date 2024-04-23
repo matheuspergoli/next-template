@@ -1,4 +1,4 @@
-import { Routes } from "@/shared/navigation/routes"
+import { routes } from "@/shared/navigation/routes"
 
 interface PageProps {
 	params?: unknown
@@ -6,8 +6,8 @@ interface PageProps {
 }
 
 export default function Page({ params, searchParams }: PageProps) {
-	const { surname } = Routes.hello.parseSearchParams(searchParams)
-	const { name } = Routes.hello.parseParams(params)
+	const { surname } = routes.hello.$parseSearchParams(searchParams)
+	const { name } = routes.hello.$parseParams(params)
 
 	return (
 		<main className="container mx-auto mt-10">

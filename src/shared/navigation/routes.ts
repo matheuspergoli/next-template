@@ -1,10 +1,9 @@
+import { createNavigationConfig } from "next-safe-navigation"
 import { z } from "zod"
 
-import { createRoute } from "@/libs/create-route"
-
-export const Routes = {
-	home: createRoute(() => "/"),
-	hello: createRoute((p) => `/hello/${p.name}`, {
+export const { routes } = createNavigationConfig((defineRoute) => ({
+	home: defineRoute("/"),
+	hello: defineRoute("/hello/[name]", {
 		params: z.object({
 			name: z.string()
 		}),
@@ -12,4 +11,4 @@ export const Routes = {
 			surname: z.string()
 		})
 	})
-}
+}))
