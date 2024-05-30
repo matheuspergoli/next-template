@@ -1,4 +1,9 @@
-import { NextFetchEvent, NextMiddleware, NextRequest, NextResponse } from "next/server"
+import {
+	NextFetchEvent,
+	NextRequest,
+	NextResponse,
+	type NextMiddleware
+} from "next/server"
 
 type Mode = "parallel" | "sequence"
 type MiddlewareMap = Record<string, NextMiddleware | NextMiddleware[]>

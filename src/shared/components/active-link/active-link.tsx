@@ -1,11 +1,11 @@
 "use client"
 
 import React from "react"
-import Link, { LinkProps } from "next/link"
+import Link, { type LinkProps } from "next/link"
 import { usePathname } from "next/navigation"
 
 import { cn } from "@/libs/utils"
-import { ButtonProps, buttonVariants } from "@/shared/ui/button"
+import { buttonVariants, type ButtonProps } from "@/shared/ui/button"
 
 interface ActiveLinkProps extends LinkProps {
 	children: React.ReactNode
