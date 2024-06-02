@@ -23,6 +23,9 @@ const middleware = async () => {
 
 const action = actionBuilder({ middleware })
 
-export const serverAction = action.input(inputSchema).execute(async ({ input, ctx }) => {
-	return ctx.users.filter((user) => user.id === input.id)
-})
+export const serverAction = action
+	.input(inputSchema)
+	.output(outputSchema)
+	.execute(async ({ input, ctx }) => {
+		return ctx.users.filter((user) => user.id === input.id)
+	})

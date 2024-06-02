@@ -1,4 +1,5 @@
 import { serverAction } from "@/actions/example"
+import { run } from "@/libs/utils"
 import { BlurImage } from "@/shared/components/blur-image"
 import { Badge } from "@/shared/ui/badge"
 
@@ -30,12 +31,18 @@ export default async function Page() {
 
 			<section>
 				<pre className="text-center">👇 server action response 👇</pre>
-				{result.map((item) => (
-					<div key={item.id} className="text-center">
-						<h2 className="text-xl font-bold">{item.name}</h2>
-						<p>{item.username}</p>
-					</div>
-				))}
+				{run(() => {
+					if (result.success) {
+						return result.data.map((item) => (
+							<div key={item.id} className="text-center">
+								<h2 className="text-xl font-bold">{item.name}</h2>
+								<p>{item.username}</p>
+							</div>
+						))
+					}
+
+					return <p>{result.error.message}</p>
+				})}
 			</section>
 
 			<figure className="overflow-hidden rounded-lg border">
