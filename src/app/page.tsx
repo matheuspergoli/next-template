@@ -1,12 +1,14 @@
-import { serverAction } from "@/actions/example"
 import { run } from "@/libs/utils"
+import { userActions } from "@/server/routes/user"
 import { BlurImage } from "@/shared/components/blur-image"
 import { Badge } from "@/shared/ui/badge"
 
 const randomNumber = () => Math.floor(Math.random() * 10) + 1
 
 export default async function Page() {
-	const result = await serverAction({ id: randomNumber() })
+	const user = await userActions.getById({ id: randomNumber() })
+	const users = await userActions.getAll()
+	const admin = await userActions.getAdmin()
 
 	return (
 		<main className="container mx-auto mt-20 flex flex-col items-center justify-center gap-10">
@@ -32,16 +34,23 @@ export default async function Page() {
 			<section>
 				<pre className="text-center">👇 server action response 👇</pre>
 				{run(() => {
-					if (result.success) {
-						return result.data.map((item) => (
-							<div key={item.id} className="text-center">
-								<h2 className="text-xl font-bold">{item.name}</h2>
-								<p>{item.username}</p>
-							</div>
-						))
+					if (user.success) {
+						return <pre className="text-center">{JSON.stringify(user.data, null, 2)}</pre>
 					}
 
-					return <p>{result.error.message}</p>
+					if (users.success) {
+						return (
+							<pre className="text-center">{JSON.stringify(users.data, null, 2)}</pre>
+						)
+					}
+
+					if (admin.success) {
+						return (
+							<pre className="text-center">{JSON.stringify(admin.data, null, 2)}</pre>
+						)
+					}
+
+					return <pre className="text-center">Loading...</pre>
 				})}
 			</section>
 
