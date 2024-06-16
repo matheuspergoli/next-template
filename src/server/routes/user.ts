@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { ActionError } from "@/libs/action"
+import { CustomActionError } from "@/libs/action"
 import { adminAction, authedAction, publicAction } from "@/server/action"
 
 export const userActions = {
@@ -15,7 +15,7 @@ export const userActions = {
 		)
 		.execute(async ({ input }) => {
 			if (input.id > 10) {
-				throw new ActionError({
+				throw new CustomActionError({
 					message: "Id must be less than 10",
 					code: "BAD_REQUEST"
 				})
@@ -46,9 +46,9 @@ export const userActions = {
 		return users
 	}),
 
-	getAdmin: adminAction.execute(async ({ user }) => {
+	getAdmin: adminAction.execute(async ({ ctx }) => {
 		return {
-			...user,
+			...ctx.user,
 			role: "ADMIN"
 		}
 	})

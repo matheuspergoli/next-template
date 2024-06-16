@@ -1,4 +1,4 @@
-import { actionBuilder, ActionError } from "@/libs/action"
+import { actionBuilder, CustomActionError } from "@/libs/action"
 import { prisma } from "@/libs/prisma"
 
 interface User {
@@ -39,7 +39,7 @@ export const publicAction = action.create
 
 export const authedAction = action.create.use(({ ctx, next }) => {
 	if (!ctx.user.id) {
-		throw new ActionError({
+		throw new CustomActionError({
 			message: "User must be authenticated to perform this action",
 			code: "UNAUTHORIZED"
 		})
@@ -50,7 +50,7 @@ export const authedAction = action.create.use(({ ctx, next }) => {
 
 export const adminAction = authedAction.use(({ ctx, next }) => {
 	if (ctx.user.role !== "ADMIN") {
-		throw new ActionError({
+		throw new CustomActionError({
 			message: "User is not authorized to perform this action",
 			code: "UNAUTHORIZED"
 		})
