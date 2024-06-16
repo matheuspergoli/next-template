@@ -3,11 +3,33 @@ import { z } from "zod"
 type Code =
 	| "UNAUTHORIZED"
 	| "NOT_FOUND"
-	| "EXTERNAL_ERROR"
+	| "INTERNAL_ERROR"
 	| "BAD_REQUEST"
 	| "FORBIDDEN"
 	| "CONFLICT"
-	| "PARSE_ERROR"
+	| "ERROR"
+	| "TIMEOUT"
+	| "PAYLOAD_TOO_LARGE"
+	| "TOO_MANY_REQUESTS"
+	| "PARSE_INPUT_ERROR"
+	| "PARSE_OUTPUT_ERROR"
+	| "MIDDLEWARE_ERROR"
+
+const DEFAULT_ERROR_MESSAGES: Readonly<Record<Code, string>> = {
+	ERROR: "Error",
+	TIMEOUT: "Timeout",
+	CONFLICT: "Conflict",
+	NOT_FOUND: "Not found",
+	FORBIDDEN: "Forbidden",
+	BAD_REQUEST: "Bad request",
+	UNAUTHORIZED: "Unauthorized",
+	INTERNAL_ERROR: "Internal error",
+	MIDDLEWARE_ERROR: "Middleware error",
+	PAYLOAD_TOO_LARGE: "Payload too large",
+	TOO_MANY_REQUESTS: "Too many requests",
+	PARSE_INPUT_ERROR: "Error parsing input",
+	PARSE_OUTPUT_ERROR: "Error parsing output"
+}
 
 class UnknownCauseError extends Error {
 	[key: string]: unknown
@@ -42,11 +64,21 @@ const getCauseFromUnknown = (cause: unknown): Error | undefined => {
 	return undefined
 }
 
-export class ActionError extends Error {
+type FieldErrors<T = unknown> = {
+	[K in keyof T]?: string
+}
+
+class ActionError<T = unknown> extends Error {
 	public readonly code: Code
 	public override readonly cause?: unknown
+	public readonly fieldErrors?: FieldErrors<T>
 
-	constructor(props: { message?: string; cause?: unknown; code: Code }) {
+	constructor(props: {
+		message?: string
+		cause?: unknown
+		code: Code
+		fieldErrors?: FieldErrors<T>
+	}) {
 		const cause = getCauseFromUnknown(props.cause)
 		const message = props.message ?? cause?.message ?? props.code
 
@@ -54,6 +86,71 @@ export class ActionError extends Error {
 
 		this.name = "ActionError"
 		this.code = props.code
+		this.fieldErrors = props.fieldErrors
+	}
+}
+
+class InputParseError extends ActionError {
+	constructor(props: {
+		message?: string
+		cause?: unknown
+		code?: Code
+		fieldErrors?: FieldErrors
+	}) {
+		const code = props.code ?? "PARSE_INPUT_ERROR"
+		const cause = getCauseFromUnknown(props.cause)
+		const message = props.message ?? cause?.message ?? DEFAULT_ERROR_MESSAGES[code]
+
+		super({ message, cause, code, fieldErrors: props.fieldErrors })
+
+		this.name = "InputParseError"
+	}
+}
+
+class OutputParseError extends ActionError {
+	constructor(props: {
+		message?: string
+		cause?: unknown
+		code?: Code
+		fieldErrors?: FieldErrors
+	}) {
+		const code = props.code ?? "PARSE_OUTPUT_ERROR"
+		const cause = getCauseFromUnknown(props.cause)
+		const message = props.message ?? cause?.message ?? DEFAULT_ERROR_MESSAGES[code]
+
+		super({ message, cause, code, fieldErrors: props.fieldErrors })
+
+		this.name = "OutputParseError"
+	}
+}
+
+class MiddlewareError extends ActionError {
+	constructor(props: {
+		message?: string
+		cause?: unknown
+		code?: Code
+		fieldErrors?: FieldErrors
+	}) {
+		const code = props.code ?? "MIDDLEWARE_ERROR"
+		const cause = getCauseFromUnknown(props.cause)
+		const message = props.message ?? cause?.message ?? DEFAULT_ERROR_MESSAGES[code]
+
+		super({ message, cause, code, fieldErrors: props.fieldErrors })
+
+		this.name = "MiddlewareError"
+	}
+}
+
+export class CustomActionError extends ActionError {
+	public override fieldErrors?: FieldErrors<unknown> | undefined
+
+	constructor(props: { message?: string; cause?: unknown; code: Code }) {
+		super(props)
+
+		this.name = "CustomActionError"
+
+		// é legal fazer isso apenas para não mostrar no console???
+		delete this.fieldErrors
 	}
 }
 
@@ -69,12 +166,12 @@ interface Success<T> {
 	data: T
 }
 
-interface Failure {
+interface Failure<T> {
 	success: false
-	error: ActionError
+	error: ActionError<T>
 }
 
-type Result<T> = Success<T> | Failure
+type Result<T, E = unknown> = Success<T> | Failure<E>
 
 const isSuccess = <T>(result: Result<T>): result is Success<T> => result.success
 
@@ -95,12 +192,12 @@ const builder = <Context>(options?: BuilderOptions<Context>) => {
 		if (error instanceof Error) {
 			return new ActionError({
 				message: error.message,
-				code: "EXTERNAL_ERROR",
+				code: "INTERNAL_ERROR",
 				cause: error.cause
 			})
 		}
 
-		return new ActionError({ message: "Unknown error", code: "EXTERNAL_ERROR" })
+		return new ActionError({ message: "Unknown error", code: "INTERNAL_ERROR" })
 	}
 
 	const use = <NextContext>(middlewareFn: MiddlewareFn<Context, NextContext>) => {
@@ -160,19 +257,42 @@ const builder = <Context>(options?: BuilderOptions<Context>) => {
 	const parseSchema = <S extends z.ZodSchema, T>(
 		schema: S,
 		data: T,
-		message = "Invalid data"
+		code: Code
 	): Result<T> => {
 		try {
 			const parsedValues = schema.safeParse(data)
 
 			if (!parsedValues.success) {
-				const path = parsedValues.error.issues[0]?.path.toString().toUpperCase()
-				const errorMessage = parsedValues.error.issues[0]?.message ?? "Unknown error"
+				const errors = Object.entries(parsedValues.error.flatten().fieldErrors).map(
+					([path, message]) => {
+						return { path, message }
+					}
+				)
+
+				const message = errors
+					.map(({ path, message }) => {
+						if (code === "PARSE_INPUT_ERROR") {
+							return `Error parsing input at param: ${path} - ${message}`
+						}
+
+						if (code === "PARSE_OUTPUT_ERROR") {
+							return `Error parsing output at: ${path} - ${message}`
+						}
+
+						return `Error parsing at: ${path} - ${message}`
+					})
+					.join("\n")
+
+				const fieldErrors = errors.reduce((acc, { path, message }) => {
+					return { ...acc, [path]: message?.join("\n") }
+				}, {} as FieldErrors<T>)
+
 				return {
 					success: false,
 					error: new ActionError({
-						message: `${message}: ${path} ${errorMessage}`,
-						code: "PARSE_ERROR"
+						code,
+						message,
+						fieldErrors
 					})
 				}
 			}
@@ -187,17 +307,15 @@ const builder = <Context>(options?: BuilderOptions<Context>) => {
 		}
 	}
 
-	const execute = <Data, Args extends unknown[]>(
-		handler: (ctx: Context, ...args: Args) => Promise<Data>
-	) => {
-		return async (...args: Args): Promise<Result<Data>> => {
+	const execute = <Data>(handler: (props: { ctx: Context }) => Promise<Data>) => {
+		return async (): Promise<Result<Data>> => {
 			try {
-				const ctx = await executeMiddleware(args)
+				const ctx = await executeMiddleware(undefined)
 				if (!isSuccess(ctx)) {
-					throw ctx.error
+					throw new MiddlewareError(ctx.error)
 				}
 
-				const data = (await handler(ctx.data, ...args)) as Data
+				const data = (await handler({ ctx: ctx.data })) as Data
 
 				return { success: true, data }
 			} catch (error) {
@@ -214,16 +332,18 @@ const builder = <Context>(options?: BuilderOptions<Context>) => {
 		const execute = <Data>(
 			handler: (opts: { input: z.input<InputSchema>; ctx: Context }) => Promise<Data>
 		) => {
-			return async (input: z.input<InputSchema>): Promise<Result<Data>> => {
+			return async (
+				input: z.input<InputSchema>
+			): Promise<Result<Data, z.infer<InputSchema>>> => {
 				try {
-					const parsedInput = parseSchema(inputSchema, input, "Invalid Input")
+					const parsedInput = parseSchema(inputSchema, input, "PARSE_INPUT_ERROR")
 					if (!isSuccess(parsedInput)) {
-						throw parsedInput.error
+						throw new InputParseError(parsedInput.error)
 					}
 
 					const ctx = await executeMiddleware(parsedInput.data)
 					if (!isSuccess(ctx)) {
-						throw ctx.error
+						throw new MiddlewareError(ctx.error)
 					}
 
 					const data = (await handler({ input: parsedInput.data, ctx: ctx.data })) as Data
@@ -248,23 +368,23 @@ const builder = <Context>(options?: BuilderOptions<Context>) => {
 			) => {
 				return async (
 					input: z.input<InputSchema>
-				): Promise<Result<z.output<OutputSchema>>> => {
+				): Promise<Result<z.output<OutputSchema>, z.infer<InputSchema>>> => {
 					try {
-						const parsedInput = parseSchema(inputSchema, input, "Invalid Input")
+						const parsedInput = parseSchema(inputSchema, input, "PARSE_INPUT_ERROR")
 						if (!isSuccess(parsedInput)) {
-							throw parsedInput.error
+							throw new InputParseError(parsedInput.error)
 						}
 
 						const ctx = await executeMiddleware(parsedInput.data)
 						if (!isSuccess(ctx)) {
-							throw ctx.error
+							throw new MiddlewareError(ctx.error)
 						}
 
 						const data = await handler({ input: parsedInput.data, ctx: ctx.data })
 
-						const parsedOutput = parseSchema(outputSchema, data, "Invalid Output")
+						const parsedOutput = parseSchema(outputSchema, data, "PARSE_OUTPUT_ERROR")
 						if (!isSuccess(parsedOutput)) {
-							throw parsedOutput.error
+							throw new OutputParseError(parsedOutput.error)
 						}
 
 						return { success: true, data: parsedOutput.data }
@@ -292,14 +412,14 @@ const builder = <Context>(options?: BuilderOptions<Context>) => {
 				try {
 					const ctx = await executeMiddleware(undefined)
 					if (!isSuccess(ctx)) {
-						throw ctx.error
+						throw new MiddlewareError(ctx.error)
 					}
 
 					const data = await handler({ ctx: ctx.data })
 
-					const parsedOutput = parseSchema(outputSchema, data, "Invalid Output")
+					const parsedOutput = parseSchema(outputSchema, data, "PARSE_OUTPUT_ERROR")
 					if (!isSuccess(parsedOutput)) {
-						throw parsedOutput.error
+						throw new OutputParseError(parsedOutput.error)
 					}
 
 					return { success: true, data: parsedOutput.data }
@@ -322,23 +442,23 @@ const builder = <Context>(options?: BuilderOptions<Context>) => {
 			) => {
 				return async (
 					input: z.input<InputSchema>
-				): Promise<Result<z.output<OutputSchema>>> => {
+				): Promise<Result<z.output<OutputSchema>, z.infer<InputSchema>>> => {
 					try {
-						const parsedInput = parseSchema(inputSchema, input, "Invalid Input")
+						const parsedInput = parseSchema(inputSchema, input, "PARSE_INPUT_ERROR")
 						if (!isSuccess(parsedInput)) {
-							throw parsedInput.error
+							throw new InputParseError(parsedInput.error)
 						}
 
 						const ctx = await executeMiddleware(parsedInput.data)
 						if (!isSuccess(ctx)) {
-							throw ctx.error
+							throw new MiddlewareError(ctx.error)
 						}
 
 						const data = await handler({ input: parsedInput.data, ctx: ctx.data })
 
-						const parsedOutput = parseSchema(outputSchema, data, "Invalid Output")
+						const parsedOutput = parseSchema(outputSchema, data, "PARSE_OUTPUT_ERROR")
 						if (!isSuccess(parsedOutput)) {
-							throw parsedOutput.error
+							throw new OutputParseError(parsedOutput.error)
 						}
 
 						return { success: true, data: parsedOutput.data }
