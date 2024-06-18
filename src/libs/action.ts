@@ -1,3 +1,6 @@
+import { isNotFoundError } from "next/dist/client/components/not-found"
+import { isRedirectError } from "next/dist/client/components/redirect"
+
 import { z } from "zod"
 
 type Code =
@@ -14,6 +17,7 @@ type Code =
 	| "PARSE_INPUT_ERROR"
 	| "PARSE_OUTPUT_ERROR"
 	| "MIDDLEWARE_ERROR"
+	| "NEXT_ERROR"
 
 const DEFAULT_ERROR_MESSAGES: Readonly<Record<Code, string>> = {
 	ERROR: "Error",
@@ -21,6 +25,7 @@ const DEFAULT_ERROR_MESSAGES: Readonly<Record<Code, string>> = {
 	CONFLICT: "Conflict",
 	NOT_FOUND: "Not found",
 	FORBIDDEN: "Forbidden",
+	NEXT_ERROR: "Next error",
 	BAD_REQUEST: "Bad request",
 	UNAUTHORIZED: "Unauthorized",
 	INTERNAL_ERROR: "Internal error",
@@ -68,6 +73,13 @@ type FieldErrors<T = unknown> = {
 	[K in keyof T]?: string
 }
 
+interface JSONError<T = unknown> {
+	message: string
+	code: Code
+	cause?: unknown
+	fieldErrors?: FieldErrors<T>
+}
+
 class ActionError<T = unknown> extends Error {
 	public readonly code: Code
 	public override readonly cause?: unknown
@@ -87,6 +99,15 @@ class ActionError<T = unknown> extends Error {
 		this.name = "ActionError"
 		this.code = props.code
 		this.fieldErrors = props.fieldErrors
+	}
+
+	public toJSON(): JSONError<T> {
+		return {
+			message: this.message,
+			code: this.code,
+			cause: this.cause,
+			fieldErrors: this.fieldErrors
+		}
 	}
 }
 
@@ -142,15 +163,10 @@ class MiddlewareError extends ActionError {
 }
 
 export class CustomActionError extends ActionError {
-	public override fieldErrors?: FieldErrors<unknown> | undefined
-
 	constructor(props: { message?: string; cause?: unknown; code: Code }) {
 		super(props)
 
 		this.name = "CustomActionError"
-
-		// é legal fazer isso apenas para não mostrar no console???
-		delete this.fieldErrors
 	}
 }
 
@@ -168,7 +184,7 @@ interface Success<T> {
 
 interface Failure<T> {
 	success: false
-	error: ActionError<T>
+	error: JSONError<T>
 }
 
 type Result<T, E = unknown> = Success<T> | Failure<E>
@@ -177,16 +193,29 @@ const isSuccess = <T>(result: Result<T>): result is Success<T> => result.success
 
 interface BuilderOptions<Context> {
 	middleware?: (parsedInput: unknown) => MaybePromise<Context>
-	errorHandler?: (error: ActionError) => MaybePromise<void>
+	errorHandler?: (error: JSONError) => MaybePromise<void>
 	middlewareStack: MiddlewareFn<unknown, unknown>[]
 }
 
 const builder = <Context>(options?: BuilderOptions<Context>) => {
 	const middlewareStack = options?.middlewareStack ?? []
 
-	const handleErrors = (error: unknown): ActionError => {
+	const handleErrors = (error: unknown) => {
 		if (error instanceof ActionError) {
-			return error
+			return new ActionError({
+				message: error.message,
+				code: error.code,
+				cause: error.cause,
+				fieldErrors: error.fieldErrors
+			}).toJSON()
+		}
+
+		if (isRedirectError(error) || isNotFoundError(error)) {
+			return new ActionError({
+				message: error.message,
+				code: "NEXT_ERROR",
+				cause: error.cause
+			}).toJSON()
 		}
 
 		if (error instanceof Error) {
@@ -194,10 +223,10 @@ const builder = <Context>(options?: BuilderOptions<Context>) => {
 				message: error.message,
 				code: "INTERNAL_ERROR",
 				cause: error.cause
-			})
+			}).toJSON()
 		}
 
-		return new ActionError({ message: "Unknown error", code: "INTERNAL_ERROR" })
+		return new ActionError({ message: "Unknown error", code: "INTERNAL_ERROR" }).toJSON()
 	}
 
 	const use = <NextContext>(middlewareFn: MiddlewareFn<Context, NextContext>) => {
@@ -323,6 +352,9 @@ const builder = <Context>(options?: BuilderOptions<Context>) => {
 				if (options?.errorHandler) {
 					await options.errorHandler(handledError)
 				}
+				if (handledError.code === "NEXT_ERROR") {
+					throw error
+				}
 				return { success: false, error: handledError }
 			}
 		}
@@ -353,6 +385,9 @@ const builder = <Context>(options?: BuilderOptions<Context>) => {
 					const handledError = handleErrors(error)
 					if (options?.errorHandler) {
 						await options.errorHandler(handledError)
+					}
+					if (handledError.code === "NEXT_ERROR") {
+						throw error
 					}
 					return { success: false, error: handledError }
 				}
@@ -393,6 +428,9 @@ const builder = <Context>(options?: BuilderOptions<Context>) => {
 						if (options?.errorHandler) {
 							await options.errorHandler(handledError)
 						}
+						if (handledError.code === "NEXT_ERROR") {
+							throw error
+						}
 						return { success: false, error: handledError }
 					}
 				}
@@ -427,6 +465,9 @@ const builder = <Context>(options?: BuilderOptions<Context>) => {
 					const handledError = handleErrors(error)
 					if (options?.errorHandler) {
 						await options.errorHandler(handledError)
+					}
+					if (handledError.code === "NEXT_ERROR") {
+						throw error
 					}
 					return { success: false, error: handledError }
 				}
@@ -467,6 +508,9 @@ const builder = <Context>(options?: BuilderOptions<Context>) => {
 						if (options?.errorHandler) {
 							await options.errorHandler(handledError)
 						}
+						if (handledError.code === "NEXT_ERROR") {
+							throw error
+						}
 						return { success: false, error: handledError }
 					}
 				}
@@ -483,7 +527,7 @@ const builder = <Context>(options?: BuilderOptions<Context>) => {
 
 interface ActionBuilderOptions<Context> {
 	middleware?: (parsedInput: unknown) => MaybePromise<Context>
-	errorHandler?: (error: ActionError) => MaybePromise<void>
+	errorHandler?: (error: JSONError) => MaybePromise<void>
 }
 
 export const actionBuilder = <Context>(options?: ActionBuilderOptions<Context>) => {
