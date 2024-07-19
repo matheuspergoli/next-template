@@ -1,4 +1,5 @@
-import { actionBuilder, CustomActionError } from "@/libs/action"
+import { ActionError, CreateAction } from "safe-action"
+
 import { prisma } from "@/libs/prisma"
 
 interface User {
@@ -19,7 +20,7 @@ const getUser = () => {
 	return user
 }
 
-const middlewareContext = async () => {
+const context = async () => {
 	const user = getUser()
 
 	return {
@@ -28,33 +29,33 @@ const middlewareContext = async () => {
 	}
 }
 
-const action = actionBuilder({
-	middleware: middlewareContext,
+const action = CreateAction.context<typeof context>().create({
+	defaultContext: context,
 	errorHandler: (error) => {
 		console.log(error)
 	}
 })
 
-export const publicAction = action.create
+export const publicAction = action
 
-export const authedAction = action.create.use(({ ctx, next }) => {
+export const authedAction = action.middleware(({ ctx, next }) => {
 	if (!ctx.user.id) {
-		throw new CustomActionError({
+		throw new ActionError({
 			message: "User must be authenticated to perform this action",
 			code: "UNAUTHORIZED"
 		})
 	}
 
-	return next({ ctx })
+	return next()
 })
 
-export const adminAction = authedAction.use(({ ctx, next }) => {
+export const adminAction = authedAction.middleware(({ ctx, next }) => {
 	if (ctx.user.role !== "ADMIN") {
-		throw new CustomActionError({
+		throw new ActionError({
 			message: "User is not authorized to perform this action",
 			code: "UNAUTHORIZED"
 		})
 	}
 
-	return next({ ctx })
+	return next()
 })

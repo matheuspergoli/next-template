@@ -1,35 +1,100 @@
-import { LRUCache } from "lru-cache"
+import { headers } from "next/headers"
 
-interface Options {
-	uniqueTokenPerInterval?: number // número máximo de tokens únicos no período de tempo
-	interval?: number // intervalo em milissegundos
-	limit: number // número máximo de requisições dentro do intervalo
+import { ActionError } from "safe-action"
+
+export const getIp = () => {
+	const forwardedFor = headers().get("x-forwarded-for")
+	const realIp = headers().get("x-real-ip")
+
+	if (forwardedFor) {
+		return forwardedFor.split(",")[0]?.trim()
+	}
+
+	if (realIp) {
+		return realIp.trim()
+	}
+
+	return null
 }
 
-export const rateLimit = (options?: Options) => {
-	const tokenCache = new LRUCache({
-		max: options?.uniqueTokenPerInterval ?? 50, // número máximo de tokens a serem armazenados no LRU Cache
-		ttl: options?.interval ?? 60 * 1000 // 1 minuto
-	})
+const PRUNE_INTERVAL = 60 * 1000
 
-	return {
-		check: (token: string, limit = options?.limit ?? 100) => {
-			const tokenCount = (tokenCache.get(token) as number[]) || [0]
+const trackers: Record<
+	string,
+	{
+		count: number
+		expiresAt: number
+	}
+> = {}
 
-			if (tokenCount[0] === 0) {
-				tokenCache.set(token, tokenCount)
-			}
+const pruneTrackers = () => {
+	const now = Date.now()
+	const newTrackers: typeof trackers = {}
 
-			tokenCount[0] += 1
+	for (const key in trackers) {
+		const tracker = trackers[key]
 
-			const currentUsage = tokenCount[0] ?? 0 // fornece um valor padrão de 0 se currentUsage for undefined
-			const isRateLimited = currentUsage >= limit
-
-			return {
-				isRateLimited,
-				currentUsage: currentUsage || 0, // fornece um valor padrão de 0 se currentUsage for undefined
-				limit
-			}
+		if (tracker && tracker.expiresAt >= now) {
+			newTrackers[key] = tracker
 		}
 	}
+
+	Object.assign(trackers, newTrackers)
+}
+
+setInterval(pruneTrackers, PRUNE_INTERVAL)
+
+export const rateLimitByKey = async ({
+	key = "global",
+	limit = 1,
+	window = 10000
+}: {
+	key: string
+	limit: number
+	window: number
+}) => {
+	const tracker = trackers[key] || { count: 0, expiresAt: 0 }
+
+	if (!trackers[key]) {
+		trackers[key] = tracker
+	}
+
+	if (tracker.expiresAt < Date.now()) {
+		tracker.count = 0
+		tracker.expiresAt = Date.now() + window
+	}
+
+	tracker.count++
+
+	if (tracker.count > limit) {
+		throw new ActionError({
+			code: "UNAUTHORIZED",
+			message: `Try again in ${Math.ceil((tracker.expiresAt - Date.now()) / 1000)} seconds`
+		})
+	}
+}
+
+export const rateLimitByIp = async ({
+	key = "global",
+	limit = 1,
+	window = 10000
+}: {
+	key: string
+	limit: number
+	window: number
+}) => {
+	const ip = getIp()
+
+	if (!ip) {
+		throw new ActionError({
+			code: "UNAUTHORIZED",
+			message: "You are not authorized to perform this action"
+		})
+	}
+
+	await rateLimitByKey({
+		key: `${ip}-${key}`,
+		limit,
+		window
+	})
 }

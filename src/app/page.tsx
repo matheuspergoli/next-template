@@ -1,14 +1,12 @@
 import { run } from "@/libs/utils"
-import { userActions } from "@/server/routes/user"
+import { getById } from "@/server/user"
 import { BlurImage } from "@/shared/components/blur-image"
 import { Badge } from "@/shared/ui/badge"
 
-const randomNumber = () => Math.floor(Math.random() * 10) + 1
+import { RefetchButton } from "./refetch-button"
 
 export default async function Page() {
-	const user = await userActions.getById({ id: randomNumber() })
-	const users = await userActions.getAll()
-	const admin = await userActions.getAdmin()
+	const user = await getById({ id: 5 })
 
 	return (
 		<main className="container mx-auto mt-20 flex flex-col items-center justify-center gap-10">
@@ -38,21 +36,11 @@ export default async function Page() {
 						return <pre className="text-center">{JSON.stringify(user.data, null, 2)}</pre>
 					}
 
-					if (users.success) {
-						return (
-							<pre className="text-center">{JSON.stringify(users.data, null, 2)}</pre>
-						)
-					}
-
-					if (admin.success) {
-						return (
-							<pre className="text-center">{JSON.stringify(admin.data, null, 2)}</pre>
-						)
-					}
-
-					return <pre className="text-center">Loading...</pre>
+					return <pre className="text-center">{user.error.message}</pre>
 				})}
 			</section>
+
+			<RefetchButton />
 
 			<figure className="overflow-hidden rounded-lg border">
 				<BlurImage
