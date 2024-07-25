@@ -6,7 +6,7 @@ import { Badge } from "@/shared/ui/badge"
 import { RefetchButton } from "./refetch-button"
 
 export default async function Page() {
-	const user = await getById({ id: 5 })
+	const { data: user, error } = await getById({ id: 5 })
 
 	return (
 		<main className="container mx-auto mt-20 flex flex-col items-center justify-center gap-10">
@@ -32,11 +32,11 @@ export default async function Page() {
 			<section>
 				<pre className="text-center">👇 server action response 👇</pre>
 				{run(() => {
-					if (user.success) {
-						return <pre className="text-center">{JSON.stringify(user.data, null, 2)}</pre>
+					if (!error) {
+						return <pre className="text-center">{JSON.stringify(user, null, 2)}</pre>
 					}
 
-					return <pre className="text-center">{user.error.message}</pre>
+					return <pre className="text-center">{error.message}</pre>
 				})}
 			</section>
 

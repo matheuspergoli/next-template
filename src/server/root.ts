@@ -29,8 +29,7 @@ const context = async () => {
 	}
 }
 
-const action = CreateAction.context<typeof context>().create({
-	defaultContext: context,
+const action = CreateAction.context(context).create({
 	errorHandler: (error) => {
 		console.log(error)
 	}
