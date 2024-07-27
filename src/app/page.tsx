@@ -30,13 +30,15 @@ export default async function Page() {
 			</section>
 
 			<section>
-				<pre className="text-center">👇 server action response 👇</pre>
+				<pre className="text-center">
+					👇 server action response example with rate limit 👇
+				</pre>
 				{run(() => {
-					if (!error) {
-						return <pre className="text-center">{JSON.stringify(user, null, 2)}</pre>
+					if (error) {
+						return <pre className="text-center">{error.message}</pre>
 					}
 
-					return <pre className="text-center">{error.message}</pre>
+					return <pre className="text-center">{JSON.stringify(user, null, 2)}</pre>
 				})}
 			</section>
 

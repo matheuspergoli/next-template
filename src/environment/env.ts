@@ -9,10 +9,6 @@ export const env = createEnv({
 		// Database variables
 		DATABASE_URL: z.string(),
 
-		// Rate limit variables
-		RATE_LIMIT_MAX: z.string().transform((v) => Number(v)),
-		RATE_LIMIT_INTERVAL: z.string().transform((v) => Number(v)),
-
 		// NextAuth variables
 		NEXTAUTH_URL: z.preprocess(
 			(v) => process.env.VERCEL_URL ?? v,
@@ -34,8 +30,6 @@ export const env = createEnv({
 	runtimeEnv: {
 		NODE_ENV: process.env.NODE_ENV,
 		DATABASE_URL: process.env.DATABASE_URL,
-		RATE_LIMIT_MAX: process.env.RATE_LIMIT_MAX,
-		RATE_LIMIT_INTERVAL: process.env.RATE_LIMIT_INTERVAL,
 		NEXTAUTH_URL: process.env.NEXTAUTH_URL,
 		NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
 		GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
