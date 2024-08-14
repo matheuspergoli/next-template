@@ -36,9 +36,9 @@ export const useIntersectionObserver = <T extends HTMLElement>(
 			rootMargin
 		})
 
-		currentRef && observer.observe(currentRef)
+		if (currentRef) observer.observe(currentRef)
 		return () => {
-			currentRef && observer.unobserve(currentRef)
+			if (currentRef) observer.unobserve(currentRef)
 		}
 	}, [threshold, root, rootMargin])
 
