@@ -8,7 +8,7 @@ import { getCurrentUser } from "@/libs/session"
 import { UserProvider } from "@/shared/providers/user-provider"
 
 export const metadata: Metadata = {
-	title: "Template Next.js 14 App Router Template",
+	title: "Next.js 14 App Router Template",
 	description: "Created by Matheus Pergoli"
 }
 
