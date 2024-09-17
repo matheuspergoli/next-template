@@ -1,19 +1,14 @@
-import "@/styles/globals.css"
-
-import React from "react"
 import type { Metadata, Viewport } from "next"
-import Link from "next/link"
 
-import { cn } from "@/libs/utils"
-import { Provider } from "@/providers/main-provider"
-import { SessionProvider } from "@/providers/session"
-import { ThemeProvider } from "@/providers/theme"
-import { ThemeMode } from "@/shared/components/theme-mode"
-import { routes } from "@/shared/navigation/routes"
-import { buttonVariants } from "@/shared/ui/button"
+import "../styles/globals.css"
+
+import { ThemeProvider } from "next-themes"
+
+import { getCurrentUser } from "@/libs/session"
+import { UserProvider } from "@/shared/providers/user-provider"
 
 export const metadata: Metadata = {
-	title: "Next.js 14 App Router Template",
+	title: "Template Next.js 14 App Router Template",
 	description: "Created by Matheus Pergoli"
 }
 
@@ -24,46 +19,17 @@ export const viewport: Viewport = {
 
 export default function RootLayout({
 	children
-}: Readonly<{ children: React.ReactNode }>) {
+}: Readonly<{
+	children: React.ReactNode
+}>) {
+	const userPromise = getCurrentUser()
+
 	return (
-		<html lang="pt-BR" suppressHydrationWarning>
+		<html lang="pt-br" suppressHydrationWarning>
 			<body>
-				<Provider providers={[SessionProvider, ThemeProvider]}>
-					<header className="border-b">
-						<nav className="container mx-auto flex h-14 items-center justify-between">
-							<ThemeMode />
-
-							<ul className="flex gap-3">
-								<li>
-									<Link
-										href={routes.home()}
-										className={cn(
-											buttonVariants({ variant: "outline" }),
-											"font-semibold"
-										)}>
-										Home
-									</Link>
-								</li>
-
-								<li>
-									<Link
-										href={routes.hello({
-											name: "Matheus",
-											search: { surname: "Pergoli" }
-										})}
-										className={cn(
-											buttonVariants({ variant: "outline" }),
-											"font-semibold"
-										)}>
-										Hello
-									</Link>
-								</li>
-							</ul>
-						</nav>
-					</header>
-
-					{children}
-				</Provider>
+				<ThemeProvider>
+					<UserProvider userPromise={userPromise}>{children}</UserProvider>
+				</ThemeProvider>
 			</body>
 		</html>
 	)

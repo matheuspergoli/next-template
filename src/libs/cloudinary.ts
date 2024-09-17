@@ -1,6 +1,7 @@
 import { v2 as cloudinary } from "cloudinary"
 
 import { env } from "@/environment/env"
+import { MAX_UPLOAD_IMAGE_SIZE } from "@/libs/app-config"
 
 cloudinary.config({
 	api_key: env.CLOUDINARY_API_KEY,
@@ -13,6 +14,12 @@ export const uploadToCloudinary = async ({ formData }: { formData: FormData }) =
 
 	if (!file) {
 		return { error: "No file found" }
+	}
+
+	if (file.size > MAX_UPLOAD_IMAGE_SIZE) {
+		return {
+			error: `File is too large. Max size is ${MAX_UPLOAD_IMAGE_SIZE / 1024 / 1024}MB`
+		}
 	}
 
 	const arr = await file.arrayBuffer()
@@ -35,6 +42,14 @@ export const uploadManyToCloudinary = async ({ formData }: { formData: FormData 
 
 	if (!files) {
 		return { error: "No files found" }
+	}
+
+	if (files.some((file) => file.size > MAX_UPLOAD_IMAGE_SIZE)) {
+		return {
+			error: `One or more files are too large. Max size is ${
+				MAX_UPLOAD_IMAGE_SIZE / 1024 / 1024
+			}MB`
+		}
 	}
 
 	const arr = await Promise.all(

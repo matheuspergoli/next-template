@@ -3,25 +3,13 @@ import { z } from "zod"
 
 export const env = createEnv({
 	server: {
-		// Node variables
 		NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
-
-		// Database variables
-		DATABASE_URL: z.string(),
-
-		// NextAuth variables
-		NEXTAUTH_URL: z.preprocess(
-			(v) => process.env.VERCEL_URL ?? v,
-			process.env.VERCEL_URL ? z.string() : z.string().url()
-		),
-		NEXTAUTH_SECRET:
-			process.env.NODE_ENV === "production" ? z.string() : z.string().optional(),
-
-		// GitHub oauth variables
+		TURSO_CONNECTION_URL: z.string(),
+		TURSO_AUTH_TOKEN: z.string(),
 		GITHUB_CLIENT_ID: z.string(),
 		GITHUB_CLIENT_SECRET: z.string(),
-
-		// Cloudinary variables
+		GOOGLE_CLIENT_ID: z.string(),
+		GOOGLE_CLIENT_SECRET: z.string(),
 		CLOUDINARY_API_KEY: z.string(),
 		CLOUDINARY_CLOUD_NAME: z.string(),
 		CLOUDINARY_API_SECRET: z.string()
@@ -29,13 +17,17 @@ export const env = createEnv({
 	client: {},
 	runtimeEnv: {
 		NODE_ENV: process.env.NODE_ENV,
-		DATABASE_URL: process.env.DATABASE_URL,
-		NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-		NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
 		GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
 		GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
+		GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+		GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+		TURSO_AUTH_TOKEN: process.env.TURSO_AUTH_TOKEN,
+		TURSO_CONNECTION_URL: process.env.TURSO_CONNECTION_URL,
 		CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
 		CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
 		CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET
-	}
+	},
+
+	emptyStringAsUndefined: true,
+	skipValidation: !!process.env.SKIP_ENV_VALIDATION
 })

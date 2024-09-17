@@ -1,9 +1,8 @@
 import { createMiddleware } from "@/libs/middleware"
-import { authorizationMiddleware } from "@/middlewares/authorization-middleware"
 import { loggingMiddleware } from "@/middlewares/logging-middleware"
 
 export default createMiddleware("sequence", {
-	"*": [loggingMiddleware, authorizationMiddleware]
+	"*": [loggingMiddleware]
 })
 
 export const config = {

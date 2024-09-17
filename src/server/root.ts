@@ -1,60 +1,40 @@
+import "server-only"
+
 import { ActionError, CreateAction } from "safe-action"
 
-import { prisma } from "@/libs/prisma"
+import { getCurrentUser } from "@/libs/session"
 
-interface User {
-	id: number
-	name: string
-	email: string
-	role: "ADMIN" | "USER"
-}
+import { db } from "./db/client"
 
-const getUser = () => {
-	const user: User = {
-		id: 1,
-		name: "John Doe",
-		email: "john.doe@email.com",
-		role: "ADMIN"
-	}
-
-	return user
-}
-
-const context = async () => {
-	const user = getUser()
-
+const context = () => {
 	return {
-		prisma,
-		user
+		db
 	}
 }
 
 const action = CreateAction.context(context).create({
 	errorHandler: (error) => {
-		console.log(error)
+		if (error.code !== "NEXT_ERROR") {
+			console.log("ActionError", error)
+		}
 	}
 })
 
 export const publicAction = action
 
-export const authedAction = action.middleware(({ ctx, next }) => {
-	if (!ctx.user.id) {
+export const authedAction = action.middleware(async ({ next }) => {
+	const user = await getCurrentUser()
+
+	if (!user?.id) {
 		throw new ActionError({
-			message: "User must be authenticated to perform this action",
-			code: "UNAUTHORIZED"
+			code: "UNAUTHORIZED",
+			message: "You are not authorized to perform this action"
 		})
 	}
 
-	return next()
-})
-
-export const adminAction = authedAction.middleware(({ ctx, next }) => {
-	if (ctx.user.role !== "ADMIN") {
-		throw new ActionError({
-			message: "User is not authorized to perform this action",
-			code: "UNAUTHORIZED"
-		})
-	}
-
-	return next()
+	return next({
+		ctx: {
+			user
+		}
+	})
 })

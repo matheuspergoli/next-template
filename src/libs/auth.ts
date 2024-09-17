@@ -1,69 +1,80 @@
-import { PrismaAdapter } from "@auth/prisma-adapter"
-import { getServerSession, type NextAuthOptions } from "next-auth"
-import GithubProvider from "next-auth/providers/github"
+import { cookies } from "next/headers"
+
+import { GitHub, Google } from "arctic"
+import { Lucia, type Session, type User } from "lucia"
 
 import { env } from "@/environment/env"
-import { prisma } from "@/libs/prisma"
+import { adapter } from "@/server/db/client"
+import { users } from "@/server/db/schema"
 
-export const authOptions: NextAuthOptions = {
-	adapter: PrismaAdapter(prisma) as NextAuthOptions["adapter"],
-	providers: [
-		GithubProvider({
-			clientId: env.GITHUB_CLIENT_ID,
-			clientSecret: env.GITHUB_CLIENT_SECRET
-		})
-	],
-	callbacks: {
-		async session({ token, session }) {
-			if (token) {
-				session.user.id = token.id
-				session.user.role = token.role
-				session.user.name = token.name
-				session.user.email = token.email
-				session.user.image = token.image
-			}
+import { getBaseUrl } from "./utils"
 
-			return session
-		},
-		async jwt({ token, user }) {
-			const dbUser = await prisma.user.findFirst({
-				where: {
-					email: token.email
-				},
-				select: {
-					id: true,
-					role: true,
-					name: true,
-					email: true,
-					image: true
-				}
-			})
+type DatabaseUser = Omit<typeof users.$inferSelect, "passwordHash">
 
-			if (!dbUser) {
-				if (user) {
-					token.id = user?.id
-				}
-				return token
-			}
-
-			return {
-				id: dbUser.id,
-				role: dbUser.role,
-				name: dbUser.name,
-				email: dbUser.email,
-				image: dbUser.image
-			}
+export const lucia = new Lucia(adapter, {
+	sessionCookie: {
+		name: "session",
+		attributes: {
+			secure: env.NODE_ENV === "production"
 		}
 	},
-	pages: {
-		signIn: "/login"
-	},
-	session: {
-		strategy: "jwt"
-	},
-	secret: env.NEXTAUTH_SECRET
+	getSessionAttributes: () => ({}),
+	getUserAttributes: (attr): DatabaseUser => {
+		return {
+			id: attr.id,
+			email: attr.email,
+			username: attr.username,
+			emailVerified: attr.emailVerified
+		}
+	}
+})
+
+export const validateRequest = async (): Promise<
+	{ user: User; session: Session } | { user: null; session: null }
+> => {
+	const sessionId = cookies().get(lucia.sessionCookieName)?.value ?? null
+
+	if (!sessionId) {
+		return {
+			user: null,
+			session: null
+		}
+	}
+
+	const result = await lucia.validateSession(sessionId)
+
+	try {
+		if (result.session && result.session.fresh) {
+			const sessionCookie = lucia.createSessionCookie(result.session.id)
+			cookies().set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes)
+		}
+
+		if (!result.session) {
+			const sessionCookie = lucia.createBlankSessionCookie()
+			cookies().set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes)
+		}
+	} catch {
+		return {
+			user: null,
+			session: null
+		}
+	}
+
+	return result
 }
 
-export const getSession = () => {
-	return getServerSession(authOptions)
+declare module "lucia" {
+	interface Register {
+		Lucia: typeof lucia
+		DatabaseUserAttributes: DatabaseUser
+		DatabaseSessionAttributes: Record<string, never>
+	}
 }
+
+export const github = new GitHub(env.GITHUB_CLIENT_ID, env.GITHUB_CLIENT_SECRET)
+
+export const google = new Google(
+	env.GOOGLE_CLIENT_ID,
+	env.GOOGLE_CLIENT_SECRET,
+	`${getBaseUrl()}/api/login/google/callback`
+)
