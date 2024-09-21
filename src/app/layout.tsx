@@ -2,9 +2,8 @@ import type { Metadata, Viewport } from "next"
 
 import "../styles/globals.css"
 
-import { ThemeProvider } from "next-themes"
-
 import { getCurrentUser } from "@/libs/session"
+import { ThemeProvider } from "@/shared/providers/theme-provider"
 import { UserProvider } from "@/shared/providers/user-provider"
 
 export const metadata: Metadata = {
@@ -25,7 +24,7 @@ export default function RootLayout({
 	const userPromise = getCurrentUser()
 
 	return (
-		<html lang="pt-br" suppressHydrationWarning>
+		<html lang="pt-BR" suppressHydrationWarning>
 			<body>
 				<ThemeProvider>
 					<UserProvider userPromise={userPromise}>{children}</UserProvider>
