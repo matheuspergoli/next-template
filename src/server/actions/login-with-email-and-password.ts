@@ -19,7 +19,7 @@ export const loginWithEmailAndPassword = publicAction
 		})
 	)
 	.middleware(async ({ input }) => {
-		await rateLimitByKey({ key: input.email, window: 30000, limit: 5 })
+		await rateLimitByKey({ key: input.email, window: 30000, limit: 3 })
 	})
 
 	.execute(async ({ ctx, input }) => {

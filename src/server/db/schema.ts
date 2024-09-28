@@ -8,8 +8,8 @@ export const users = sqliteTable("users", {
 	emailVerified: integer("email_verified", { mode: "boolean" }).notNull().default(false)
 })
 
-export const oauthAccount = sqliteTable(
-	"oauth_account",
+export const oauthAccounts = sqliteTable(
+	"oauth_accounts",
 	{
 		providerId: text("provider_id").notNull(),
 		providerUserId: text("provider_user_id").notNull(),
@@ -23,6 +23,20 @@ export const oauthAccount = sqliteTable(
 		}
 	}
 )
+
+export const emailVerificationCodes = sqliteTable("email_verification_codes", {
+	id: text("id").primaryKey(),
+	code: text("code").unique().notNull(),
+	userId: text("user_id").notNull(),
+	email: text("email").notNull(),
+	expiresAt: integer("expires_at", { mode: "timestamp" }).notNull()
+})
+
+export const passwordResetTokens = sqliteTable("password_reset_tokens", {
+	tokenHash: text("token_hash").unique().notNull(),
+	userId: text("user_id").notNull(),
+	expiresAt: integer("expires_at", { mode: "timestamp" }).notNull()
+})
 
 export const sessions = sqliteTable("sessions", {
 	id: text("id").primaryKey(),

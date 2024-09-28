@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm"
 import { ActionError } from "safe-action"
 import { z } from "zod"
 
-import { oauthAccount, users } from "../db/schema"
+import { oauthAccounts, users } from "../db/schema"
 import { publicAction } from "../root"
 
 export const getUserByGithubId = publicAction
@@ -18,8 +18,8 @@ export const getUserByGithubId = publicAction
 				emailVerified: users.emailVerified
 			})
 			.from(users)
-			.innerJoin(oauthAccount, eq(users.id, oauthAccount.userId))
-			.where(eq(oauthAccount.providerUserId, input.githubId))
+			.innerJoin(oauthAccounts, eq(users.id, oauthAccounts.userId))
+			.where(eq(oauthAccounts.providerUserId, input.githubId))
 			.limit(1)
 			.then((res) => res[0] ?? null)
 

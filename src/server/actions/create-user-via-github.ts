@@ -4,7 +4,7 @@ import { generateIdFromEntropySize } from "lucia"
 import { ActionError } from "safe-action"
 import { z } from "zod"
 
-import { oauthAccount, users } from "../db/schema"
+import { oauthAccounts, users } from "../db/schema"
 import { publicAction } from "../root"
 
 export const createUserViaGithub = publicAction
@@ -18,46 +18,40 @@ export const createUserViaGithub = publicAction
 	.execute(async ({ ctx, input }) => {
 		const id = generateIdFromEntropySize(10)
 
-		const user = await ctx.db.transaction(async (tx) => {
-			const newUser = await tx
-				.insert(users)
-				.values({
-					id,
-					username: input.username,
-					email: input.email,
-					emailVerified: false
-				})
-				.returning()
-				.then((res) => res[0] ?? null)
+		const newUser = await ctx.db
+			.insert(users)
+			.values({
+				id,
+				username: input.username,
+				email: input.email,
+				emailVerified: true
+			})
+			.returning()
+			.then((res) => res[0] ?? null)
 
-			if (!newUser) {
-				tx.rollback()
-				throw new ActionError({
-					code: "INTERNAL_ERROR",
-					message: "Failed to create user"
-				})
-			}
+		if (!newUser) {
+			throw new ActionError({
+				code: "INTERNAL_ERROR",
+				message: "Failed to create user"
+			})
+		}
 
-			const newOauthAccount = await tx
-				.insert(oauthAccount)
-				.values({
-					providerId: "github",
-					providerUserId: input.githubId.toString(),
-					userId: id
-				})
-				.returning()
-				.then((res) => res[0] ?? null)
+		const newOauthAccount = await ctx.db
+			.insert(oauthAccounts)
+			.values({
+				providerId: "github",
+				providerUserId: input.githubId.toString(),
+				userId: id
+			})
+			.returning()
+			.then((res) => res[0] ?? null)
 
-			if (!newOauthAccount) {
-				tx.rollback()
-				throw new ActionError({
-					code: "INTERNAL_ERROR",
-					message: "Failed to create oauth account"
-				})
-			}
+		if (!newOauthAccount) {
+			throw new ActionError({
+				code: "INTERNAL_ERROR",
+				message: "Failed to create oauth account"
+			})
+		}
 
-			return newUser
-		})
-
-		return user
+		return newUser
 	})

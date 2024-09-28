@@ -5,6 +5,7 @@ import "../styles/globals.css"
 import { getCurrentUser } from "@/libs/session"
 import { ThemeProvider } from "@/shared/providers/theme-provider"
 import { UserProvider } from "@/shared/providers/user-provider"
+import { Toaster } from "@/shared/ui/sonner"
 
 export const metadata: Metadata = {
 	title: "Next.js 14 App Router Template",
@@ -24,10 +25,13 @@ export default function RootLayout({
 	const userPromise = getCurrentUser()
 
 	return (
-		<html lang="pt-BR" suppressHydrationWarning>
+		<html lang="en" suppressHydrationWarning>
 			<body>
 				<ThemeProvider>
-					<UserProvider userPromise={userPromise}>{children}</UserProvider>
+					<UserProvider userPromise={userPromise}>
+						{children}
+						<Toaster />
+					</UserProvider>
 				</ThemeProvider>
 			</body>
 		</html>
