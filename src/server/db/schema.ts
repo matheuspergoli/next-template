@@ -1,17 +1,40 @@
-import { integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core"
+import {
+	customType,
+	integer,
+	primaryKey,
+	sqliteTable,
+	text
+} from "drizzle-orm/sqlite-core"
+
+export type Roles = "user" | "admin" | "superadmin"
+
+export const roles = customType<{ data: Roles }>({
+	dataType() {
+		return "user"
+	}
+})
 
 export const users = sqliteTable("users", {
 	id: text("id").primaryKey(),
 	username: text("username").notNull(),
 	email: text("email").unique().notNull(),
 	passwordHash: text("password_hash"),
+	role: roles("role").notNull().default("user"),
 	emailVerified: integer("email_verified", { mode: "boolean" }).notNull().default(false)
+})
+
+export type OauthProviderIds = "github" | "google"
+
+export const oauthProviderIds = customType<{ data: OauthProviderIds }>({
+	dataType() {
+		return "github"
+	}
 })
 
 export const oauthAccounts = sqliteTable(
 	"oauth_accounts",
 	{
-		providerId: text("provider_id").notNull(),
+		providerId: oauthProviderIds("provider_id").notNull(),
 		providerUserId: text("provider_user_id").notNull(),
 		userId: text("user_id")
 			.notNull()

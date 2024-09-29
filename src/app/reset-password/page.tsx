@@ -1,5 +1,5 @@
 import { ResetPasswordCard } from "@/features/reset-password"
-import { BaseLayout } from "@/shared/layouts/base-layout"
+import { AuthLayout } from "@/shared/layouts/auth-layout"
 import { routes } from "@/shared/navigation/routes"
 
 interface Params {
@@ -11,8 +11,8 @@ export default function Page({ searchParams }: Params) {
 	console.log(token)
 
 	return (
-		<BaseLayout>
+		<AuthLayout>
 			<ResetPasswordCard />
-		</BaseLayout>
+		</AuthLayout>
 	)
 }

@@ -1,10 +1,10 @@
 import { RegisterCard } from "@/features/register"
-import { BaseLayout } from "@/shared/layouts/base-layout"
+import { AuthLayout } from "@/shared/layouts/auth-layout"
 
 export default function Page() {
 	return (
-		<BaseLayout>
+		<AuthLayout>
 			<RegisterCard />
-		</BaseLayout>
+		</AuthLayout>
 	)
 }

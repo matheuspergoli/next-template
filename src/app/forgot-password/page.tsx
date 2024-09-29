@@ -1,10 +1,10 @@
 import { ForgotPasswordCard } from "@/features/forgot-password"
-import { BaseLayout } from "@/shared/layouts/base-layout"
+import { AuthLayout } from "@/shared/layouts/auth-layout"
 
 export default function Page() {
 	return (
-		<BaseLayout>
+		<AuthLayout>
 			<ForgotPasswordCard />
-		</BaseLayout>
+		</AuthLayout>
 	)
 }

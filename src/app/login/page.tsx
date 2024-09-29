@@ -1,10 +1,10 @@
 import { LoginCard } from "@/features/login"
-import { BaseLayout } from "@/shared/layouts/base-layout"
+import { AuthLayout } from "@/shared/layouts/auth-layout"
 
 export default function Page() {
 	return (
-		<BaseLayout>
+		<AuthLayout>
 			<LoginCard />
-		</BaseLayout>
+		</AuthLayout>
 	)
 }
