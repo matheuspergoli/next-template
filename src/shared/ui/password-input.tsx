@@ -9,7 +9,7 @@ import { cn } from "@/libs/utils"
 import { Button } from "./button"
 import { Input } from "./input"
 
-export const PasswordInput = React.forwardRef<
+const PasswordInput = React.forwardRef<
 	HTMLInputElement,
 	React.InputHTMLAttributes<HTMLInputElement>
 >(({ className, disabled, ...props }, ref) => {
@@ -52,3 +52,5 @@ export const PasswordInput = React.forwardRef<
 	)
 })
 PasswordInput.displayName = "PasswordInput"
+
+export { PasswordInput }

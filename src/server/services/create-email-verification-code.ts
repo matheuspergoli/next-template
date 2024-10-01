@@ -23,6 +23,7 @@ export const createEmailVerificationCode = publicAction
 
 		const code = generateRandomString(8, alphabet("0-9", "A-Z"))
 		const id = generateIdFromEntropySize(10)
+
 		await ctx.db.insert(emailVerificationCodes).values({
 			id,
 			code,

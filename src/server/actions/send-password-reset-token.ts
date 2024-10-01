@@ -9,6 +9,7 @@ import { rateLimitByKey } from "@/libs/limiter"
 import { resend } from "@/libs/resend"
 import { getBaseUrl } from "@/libs/utils"
 import { PasswordResetEmail } from "@/shared/emails/reset-password"
+import { routes } from "@/shared/navigation/routes"
 
 import { users } from "../db/schema"
 import { publicAction } from "../root"
@@ -42,7 +43,7 @@ export const sendPasswordResetToken = publicAction
 			})
 		}
 
-		const verificationLink = `${getBaseUrl()}/reset-password?token=${verificationToken}`
+		const verificationLink = `${getBaseUrl()}${routes.resetPassword({ search: { token: verificationToken } })}`
 
 		const { error } = await resend.emails.send({
 			from: env.RESEND_DOMAIN,

@@ -32,7 +32,7 @@ export const createUserViaGoogle = publicAction
 		if (!newUser) {
 			throw new ActionError({
 				code: "INTERNAL_ERROR",
-				message: "Failed to create user"
+				message: "Failed to create user via google"
 			})
 		}
 
@@ -49,7 +49,7 @@ export const createUserViaGoogle = publicAction
 		if (!newOauthAccount) {
 			throw new ActionError({
 				code: "INTERNAL_ERROR",
-				message: "Failed to create oauth account"
+				message: "Failed to create google oauth account"
 			})
 		}
 

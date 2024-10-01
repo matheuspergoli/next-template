@@ -1,5 +1,6 @@
 import "server-only"
 
+import { eq } from "drizzle-orm"
 import { generateIdFromEntropySize } from "lucia"
 import { createDate, TimeSpan } from "oslo"
 import { sha256 } from "oslo/crypto"
@@ -12,9 +13,13 @@ import { publicAction } from "../root"
 export const createPasswordResetToken = publicAction
 	.input(z.object({ userId: z.string() }))
 	.execute(async ({ input, ctx }) => {
-		await ctx.db.delete(passwordResetTokens)
+		await ctx.db
+			.delete(passwordResetTokens)
+			.where(eq(passwordResetTokens.userId, input.userId))
+
 		const tokenId = generateIdFromEntropySize(25)
 		const tokenHash = encodeHex(await sha256(new TextEncoder().encode(tokenId)))
+
 		await ctx.db.insert(passwordResetTokens).values({
 			tokenHash,
 			userId: input.userId,

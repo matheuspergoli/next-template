@@ -32,7 +32,7 @@ export const signupWithEmailAndPassword = publicAction
 		if (existingUser) {
 			throw new ActionError({
 				code: "CONFLICT",
-				message: "Signup failed. Check your information or try another email address."
+				message: "Signup failed. Check your credentials or try another email address."
 			})
 		}
 

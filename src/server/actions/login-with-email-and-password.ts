@@ -30,7 +30,7 @@ export const loginWithEmailAndPassword = publicAction
 		if (!existingUser || !existingUser.passwordHash) {
 			throw new ActionError({
 				code: "NOT_FOUND",
-				message: "Incorrect username or password"
+				message: "Incorrect email or password"
 			})
 		}
 
@@ -39,7 +39,7 @@ export const loginWithEmailAndPassword = publicAction
 		if (!validPassword) {
 			throw new ActionError({
 				code: "UNAUTHORIZED",
-				message: "Incorrect username or password"
+				message: "Incorrect email or password"
 			})
 		}
 
