@@ -1,10 +1,9 @@
 import { ForgotPasswordCard } from "@/features/forgot-password"
-import { AuthLayout } from "@/shared/layouts/auth-layout"
 
 export default function Page() {
 	return (
-		<AuthLayout>
+		<main className="flex h-screen w-screen items-center justify-center">
 			<ForgotPasswordCard />
-		</AuthLayout>
+		</main>
 	)
 }

@@ -1,10 +1,9 @@
 import { LoginCard } from "@/features/login"
-import { AuthLayout } from "@/shared/layouts/auth-layout"
 
 export default function Page() {
 	return (
-		<AuthLayout>
+		<main className="flex h-screen w-screen items-center justify-center">
 			<LoginCard />
-		</AuthLayout>
+		</main>
 	)
 }
