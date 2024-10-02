@@ -64,7 +64,7 @@ export const ForgotPasswordCard = () => {
 						) : null}
 					</div>
 					<Button className="w-full font-semibold" disabled={isPending}>
-						Send link
+						{isPending ? "Sending..." : "Send link"}
 					</Button>
 				</form>
 			</CardContent>

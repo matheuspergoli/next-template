@@ -75,7 +75,7 @@ export const ResetPasswordCard = () => {
 						) : null}
 					</div>
 					<Button className="w-full font-semibold" disabled={isPending}>
-						Reset Password
+						{isPending ? "Resetting..." : "Reset password"}
 					</Button>
 				</form>
 			</CardContent>

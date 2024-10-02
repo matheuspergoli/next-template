@@ -12,6 +12,7 @@ import {
 import { getCurrentUser } from "@/libs/session"
 import { logout } from "@/server/actions/logout"
 import { routes } from "@/shared/navigation/routes"
+import { AutoBreadcrumb } from "@/shared/ui/auto-breadcrumb"
 import { Button } from "@/shared/ui/button"
 import { Separator } from "@/shared/ui/separator"
 import {
@@ -23,7 +24,6 @@ import {
 } from "@/shared/ui/sheet"
 
 import { ForbiddenBanner } from "../banners/forbidden-banner"
-import { AutoBreadcrumb } from "../components/auto-breadcrumbs"
 import { ThemeMode } from "../components/theme-mode"
 
 export const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
@@ -38,14 +38,15 @@ export const DashboardLayout = async ({ children }: { children: React.ReactNode 
 			<section className="hidden items-center rounded-md border p-3 lg:flex">
 				<Link href={routes.home()}>
 					<h1 className="flex items-center gap-3 text-lg font-semibold">
-						<RocketIcon className="h-5 w-5" />
+						<RocketIcon className="h-10 w-10" />
 						Acme Inc
 					</h1>
 				</Link>
 			</section>
 
 			<section className="flex items-center justify-between rounded-md border p-3">
-				<AutoBreadcrumb />
+				<AutoBreadcrumb className="hidden sm:block" />
+				<RocketIcon className="h-10 w-10 sm:hidden" />
 
 				<Sheet>
 					<Button asChild variant="secondary">

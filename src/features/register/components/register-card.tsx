@@ -86,7 +86,7 @@ export const RegisterCard = () => {
 						) : null}
 					</div>
 					<Button className="w-full font-semibold" disabled={isPending}>
-						Create account
+						{isPending ? "Creating account..." : "Create account"}
 					</Button>
 				</form>
 			</CardContent>
