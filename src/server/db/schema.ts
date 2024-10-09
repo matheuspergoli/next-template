@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm"
 import {
 	customType,
 	integer,
@@ -7,6 +8,7 @@ import {
 } from "drizzle-orm/sqlite-core"
 
 export type Roles = "user" | "admin" | "superadmin"
+export type OauthProviderIds = "github" | "google"
 
 export const roles = customType<{ data: Roles }>({
 	dataType() {
@@ -20,10 +22,15 @@ export const users = sqliteTable("users", {
 	email: text("email").unique().notNull(),
 	passwordHash: text("password_hash"),
 	role: roles("role").notNull().default("user"),
-	emailVerified: integer("email_verified", { mode: "boolean" }).notNull().default(false)
+	emailVerified: integer("email_verified", { mode: "boolean" }).notNull().default(false),
+	createdAt: text("created_at")
+		.notNull()
+		.default(sql`(CURRENT_TIMESTAMP)`),
+	updatedAt: text("updated_at")
+		.notNull()
+		.default(sql`(CURRENT_TIMESTAMP)`)
+		.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`)
 })
-
-export type OauthProviderIds = "github" | "google"
 
 export const oauthProviderIds = customType<{ data: OauthProviderIds }>({
 	dataType() {
@@ -38,7 +45,14 @@ export const oauthAccounts = sqliteTable(
 		providerUserId: text("provider_user_id").notNull(),
 		userId: text("user_id")
 			.notNull()
-			.references(() => users.id, { onDelete: "cascade" })
+			.references(() => users.id, { onDelete: "cascade" }),
+		createdAt: text("created_at")
+			.notNull()
+			.default(sql`(CURRENT_TIMESTAMP)`),
+		updatedAt: text("updated_at")
+			.notNull()
+			.default(sql`(CURRENT_TIMESTAMP)`)
+			.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`)
 	},
 	(table) => {
 		return {
