@@ -1,30 +1,32 @@
 "use server"
 
-import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 
 import { ActionError } from "safe-action"
 
-import { lucia } from "@/libs/auth"
-import { getCurrentSession } from "@/libs/session"
+import {
+	deleteSessionTokenCookie,
+	getCurrentSession,
+	invalidateSession
+} from "@/libs/auth"
 import { routes } from "@/shared/navigation/routes"
 
-import { publicAction } from "../root"
+import { globalPOSTRateLimitMiddleware, publicAction } from "../root"
 
-export const logout = publicAction.execute(async () => {
-	const session = await getCurrentSession()
+export const logout = publicAction
+	.middleware(globalPOSTRateLimitMiddleware)
+	.execute(async () => {
+		const session = await getCurrentSession()
 
-	if (!session) {
-		throw new ActionError({
-			code: "UNAUTHORIZED",
-			message: "No session found"
-		})
-	}
+		if (!session) {
+			throw new ActionError({
+				code: "UNAUTHORIZED",
+				message: "No session found"
+			})
+		}
 
-	await lucia.invalidateSession(session.id)
+		await invalidateSession({ sessionId: session.id })
+		deleteSessionTokenCookie()
 
-	const sessionCookie = lucia.createBlankSessionCookie()
-	cookies().set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes)
-
-	redirect(routes.home())
-})
+		redirect(routes.home())
+	})

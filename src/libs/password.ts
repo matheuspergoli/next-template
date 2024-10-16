@@ -1,5 +1,5 @@
-import { sha1 } from "oslo/crypto"
-import { encodeHex } from "oslo/encoding"
+import { sha1 } from "@oslojs/crypto/sha1"
+import { encodeHexLowerCase } from "@oslojs/encoding"
 import zxcvbn from "zxcvbn"
 
 export const checkPasswordStrength = (password: string) => {
@@ -9,15 +9,15 @@ export const checkPasswordStrength = (password: string) => {
 }
 
 export const checkPasswordLeaks = async (password: string) => {
-	const passwordHash = encodeHex(await sha1(new TextEncoder().encode(password)))
-	const hashPrefix = passwordHash.slice(0, 5).toUpperCase()
+	const hash = encodeHexLowerCase(sha1(new TextEncoder().encode(password)))
+	const hashPrefix = hash.slice(0, 5)
 
 	const response = await fetch(`https://api.pwnedpasswords.com/range/${hashPrefix}`)
 
 	if (response.ok) {
 		const body = await response.text()
 		const lines = body.split("\n")
-		const hashSuffix = passwordHash.slice(5).toUpperCase()
+		const hashSuffix = hash.slice(5).toUpperCase()
 
 		for (const line of lines) {
 			const [suffix] = line.split(":")

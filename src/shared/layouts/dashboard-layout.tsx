@@ -1,4 +1,4 @@
-import type React from "react"
+import React from "react"
 import Link from "next/link"
 
 import {
@@ -9,7 +9,7 @@ import {
 	Shield
 } from "lucide-react"
 
-import { getCurrentUser } from "@/libs/session"
+import { getCurrentUser } from "@/libs/auth"
 import { logout } from "@/server/actions/logout"
 import { routes } from "@/shared/navigation/routes"
 import { AutoBreadcrumb } from "@/shared/ui/auto-breadcrumb"

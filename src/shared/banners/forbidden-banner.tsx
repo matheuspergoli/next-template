@@ -2,7 +2,10 @@ import Link from "next/link"
 
 import { LockIcon } from "lucide-react"
 
+import { cn } from "@/libs/utils"
+
 import { routes } from "../navigation/routes"
+import { buttonVariants } from "../ui/button"
 
 export const ForbiddenBanner = () => {
 	return (
@@ -17,16 +20,13 @@ export const ForbiddenBanner = () => {
 					administrator or go back to the homepage.
 				</p>
 				<div className="mt-6 flex flex-col items-center justify-center gap-4 sm:flex-row">
-					<Link
-						href={routes.home()}
-						className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-						prefetch={false}>
+					<Link href={routes.home()} className={cn(buttonVariants())} prefetch={false}>
 						Go to Homepage
 					</Link>
 					<Link
 						href={routes.home()}
-						className="inline-flex items-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-						prefetch={false}>
+						prefetch={false}
+						className={cn(buttonVariants({ variant: "secondary" }))}>
 						Contact Support
 					</Link>
 				</div>

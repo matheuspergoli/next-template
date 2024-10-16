@@ -1,8 +1,9 @@
 import { createMiddleware } from "@/libs/middleware"
+import { CSRFProtectionMiddleware } from "@/middlewares/csrf-protection-middleware"
 import { loggingMiddleware } from "@/middlewares/logging-middleware"
 
 export default createMiddleware("sequence", {
-	"*": [loggingMiddleware]
+	"*": [loggingMiddleware, CSRFProtectionMiddleware]
 })
 
 export const config = {

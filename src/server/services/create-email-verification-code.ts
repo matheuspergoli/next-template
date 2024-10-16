@@ -1,10 +1,10 @@
 import "server-only"
 
 import { eq } from "drizzle-orm"
-import { generateIdFromEntropySize } from "lucia"
-import { createDate, TimeSpan } from "oslo"
-import { alphabet, generateRandomString } from "oslo/crypto"
 import { z } from "zod"
+
+import { createDate, TimeSpan } from "@/libs/time-span"
+import { generateRandomId, generateRandomOTP } from "@/libs/utils"
 
 import { emailVerificationCodes } from "../db/schema"
 import { publicAction } from "../root"
@@ -21,15 +21,18 @@ export const createEmailVerificationCode = publicAction
 			.delete(emailVerificationCodes)
 			.where(eq(emailVerificationCodes.userId, input.userId))
 
-		const code = generateRandomString(8, alphabet("0-9", "A-Z"))
-		const id = generateIdFromEntropySize(10)
+		const code = generateRandomOTP() // 10 characters
+
+		const id = generateRandomId() // 32 characters
+
+		const expiresAt = createDate(new TimeSpan(15, "m")) // 15 minutes
 
 		await ctx.db.insert(emailVerificationCodes).values({
 			id,
 			code,
-			userId: input.userId,
+			expiresAt,
 			email: input.email,
-			expiresAt: createDate(new TimeSpan(15, "m"))
+			userId: input.userId
 		})
 
 		return code

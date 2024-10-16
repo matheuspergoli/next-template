@@ -1,11 +1,12 @@
 import "server-only"
 
+import { sha256 } from "@oslojs/crypto/sha2"
+import { encodeHexLowerCase } from "@oslojs/encoding"
 import { eq } from "drizzle-orm"
-import { generateIdFromEntropySize } from "lucia"
-import { createDate, TimeSpan } from "oslo"
-import { sha256 } from "oslo/crypto"
-import { encodeHex } from "oslo/encoding"
 import { z } from "zod"
+
+import { createDate, TimeSpan } from "@/libs/time-span"
+import { generateRandomOTP } from "@/libs/utils"
 
 import { passwordResetTokens } from "../db/schema"
 import { publicAction } from "../root"
@@ -17,13 +18,16 @@ export const createPasswordResetToken = publicAction
 			.delete(passwordResetTokens)
 			.where(eq(passwordResetTokens.userId, input.userId))
 
-		const tokenId = generateIdFromEntropySize(25)
-		const tokenHash = encodeHex(await sha256(new TextEncoder().encode(tokenId)))
+		const tokenId = generateRandomOTP() // 10 characters
+
+		const tokenHash = encodeHexLowerCase(sha256(new TextEncoder().encode(tokenId))) // 64 characters
+
+		const expiresAt = createDate(new TimeSpan(30, "m")) // 30 minutes
 
 		await ctx.db.insert(passwordResetTokens).values({
 			tokenHash,
-			userId: input.userId,
-			expiresAt: createDate(new TimeSpan(2, "h"))
+			expiresAt,
+			userId: input.userId
 		})
 
 		return tokenId

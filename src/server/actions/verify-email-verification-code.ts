@@ -1,15 +1,17 @@
 "use server"
 
 import { eq } from "drizzle-orm"
-import { isWithinExpirationDate } from "oslo"
 import { ActionError } from "safe-action"
 import { z } from "zod"
 
-import { lucia } from "@/libs/auth"
-import { setSession } from "@/libs/session"
+import { deleteSessionTokenCookie, invalidateUserSessions, setSession } from "@/libs/auth"
+import { ExpiringTokenBucket } from "@/libs/rate-limit"
+import { isWithinExpirationDate } from "@/libs/time-span"
 
 import { emailVerificationCodes, users } from "../db/schema"
-import { authedAction } from "../root"
+import { authedAction, globalPOSTRateLimitMiddleware } from "../root"
+
+const bucket = new ExpiringTokenBucket<string>(5, 60 * 30) // 5 requests per 30 minutes
 
 export const verifyEmailVerificationCode = authedAction
 	.input(
@@ -17,6 +19,15 @@ export const verifyEmailVerificationCode = authedAction
 			code: z.string()
 		})
 	)
+	.middleware(globalPOSTRateLimitMiddleware)
+	.middleware(async ({ ctx }) => {
+		if (!bucket.check(ctx.user.id, 1)) {
+			throw new ActionError({
+				code: "TOO_MANY_REQUESTS",
+				message: "Too many requests"
+			})
+		}
+	})
 	.execute(async ({ input, ctx }) => {
 		const databaseCode = await ctx.db.query.emailVerificationCodes.findFirst({
 			where: eq(emailVerificationCodes.userId, ctx.user.id)
@@ -43,11 +54,20 @@ export const verifyEmailVerificationCode = authedAction
 			})
 		}
 
+		if (!bucket.consume(ctx.user.id, 1)) {
+			throw new ActionError({
+				code: "TOO_MANY_REQUESTS",
+				message: "Too many requests"
+			})
+		}
+
 		await ctx.db
 			.delete(emailVerificationCodes)
 			.where(eq(emailVerificationCodes.id, databaseCode.id))
 
-		await lucia.invalidateUserSessions(ctx.user.id)
+		await invalidateUserSessions({ userId: ctx.user.id })
+		deleteSessionTokenCookie()
+
 		await ctx.db
 			.update(users)
 			.set({ emailVerified: true })

@@ -1,3 +1,4 @@
+import { encodeBase32, encodeBase32UpperCaseNoPadding } from "@oslojs/encoding"
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -11,6 +12,20 @@ export const getBaseUrl = () => {
 	if (typeof window !== "undefined") return window.location.origin
 	if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
 	return `http://localhost:${process.env.PORT ?? 3000}`
+}
+
+export const generateRandomOTP = () => {
+	const bytes = new Uint8Array(6)
+	crypto.getRandomValues(bytes)
+	const code = encodeBase32UpperCaseNoPadding(bytes)
+	return code
+}
+
+export const generateRandomId = () => {
+	const idBytes = new Uint8Array(20)
+	crypto.getRandomValues(idBytes)
+	const id = encodeBase32(idBytes).toLowerCase()
+	return id
 }
 
 export const placeholderBlurhash =

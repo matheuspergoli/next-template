@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next"
 
 import "../styles/globals.css"
 
-import { getCurrentUser } from "@/libs/session"
+import { getCurrentUser } from "@/libs/auth"
 import { ThemeProvider } from "@/shared/providers/theme-provider"
 import { UserProvider } from "@/shared/providers/user-provider"
 import { Toaster } from "@/shared/ui/sonner"

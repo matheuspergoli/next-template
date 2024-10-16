@@ -18,15 +18,15 @@ export const roles = customType<{ data: Roles }>({
 
 export const users = sqliteTable("users", {
 	id: text("id").primaryKey(),
+	passwordHash: text("password_hash"),
 	username: text("username").notNull(),
 	email: text("email").unique().notNull(),
-	passwordHash: text("password_hash"),
 	role: roles("role").notNull().default("user"),
 	emailVerified: integer("email_verified", { mode: "boolean" }).notNull().default(false),
-	createdAt: text("created_at")
+	createdAt: integer("created_at", { mode: "timestamp" })
 		.notNull()
 		.default(sql`(CURRENT_TIMESTAMP)`),
-	updatedAt: text("updated_at")
+	updatedAt: integer("updated_at", { mode: "timestamp" })
 		.notNull()
 		.default(sql`(CURRENT_TIMESTAMP)`)
 		.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`)
@@ -41,15 +41,15 @@ export const oauthProviderIds = customType<{ data: OauthProviderIds }>({
 export const oauthAccounts = sqliteTable(
 	"oauth_accounts",
 	{
-		providerId: oauthProviderIds("provider_id").notNull(),
 		providerUserId: text("provider_user_id").notNull(),
+		providerId: oauthProviderIds("provider_id").notNull(),
 		userId: text("user_id")
 			.notNull()
 			.references(() => users.id, { onDelete: "cascade" }),
-		createdAt: text("created_at")
+		createdAt: integer("created_at", { mode: "timestamp" })
 			.notNull()
 			.default(sql`(CURRENT_TIMESTAMP)`),
-		updatedAt: text("updated_at")
+		updatedAt: integer("updated_at", { mode: "timestamp" })
 			.notNull()
 			.default(sql`(CURRENT_TIMESTAMP)`)
 			.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`)
@@ -63,15 +63,15 @@ export const oauthAccounts = sqliteTable(
 
 export const emailVerificationCodes = sqliteTable("email_verification_codes", {
 	id: text("id").primaryKey(),
-	code: text("code").unique().notNull(),
-	userId: text("user_id").notNull(),
 	email: text("email").notNull(),
+	userId: text("user_id").notNull(),
+	code: text("code").unique().notNull(),
 	expiresAt: integer("expires_at", { mode: "timestamp" }).notNull()
 })
 
 export const passwordResetTokens = sqliteTable("password_reset_tokens", {
-	tokenHash: text("token_hash").unique().notNull(),
 	userId: text("user_id").notNull(),
+	tokenHash: text("token_hash").unique().notNull(),
 	expiresAt: integer("expires_at", { mode: "timestamp" }).notNull()
 })
 
@@ -80,5 +80,5 @@ export const sessions = sqliteTable("sessions", {
 	userId: text("user_id")
 		.notNull()
 		.references(() => users.id, { onDelete: "cascade" }),
-	expiresAt: integer("expires_at").notNull()
+	expiresAt: integer("expires_at", { mode: "timestamp" }).notNull()
 })

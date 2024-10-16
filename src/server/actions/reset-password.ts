@@ -1,20 +1,21 @@
 "use server"
 
+import { sha256 } from "@oslojs/crypto/sha2"
+import { encodeHexLowerCase } from "@oslojs/encoding"
 import { genSalt, hash } from "bcryptjs"
 import { eq } from "drizzle-orm"
-import { isWithinExpirationDate } from "oslo"
-import { sha256 } from "oslo/crypto"
-import { encodeHex } from "oslo/encoding"
 import { ActionError } from "safe-action"
 import { z } from "zod"
 
-import { lucia } from "@/libs/auth"
-import { rateLimitByIp } from "@/libs/limiter"
+import { deleteSessionTokenCookie, invalidateUserSessions, setSession } from "@/libs/auth"
 import { checkPasswordLeaks, checkPasswordStrength } from "@/libs/password"
-import { setSession } from "@/libs/session"
+import { Throttler } from "@/libs/rate-limit"
+import { isWithinExpirationDate } from "@/libs/time-span"
 
 import { passwordResetTokens, users } from "../db/schema"
-import { publicAction } from "../root"
+import { globalPOSTRateLimitMiddleware, publicAction } from "../root"
+
+const throttler = new Throttler<string>([20, 35, 60, 120, 180, 240, 360, 480, 660])
 
 export const resetPassword = publicAction
 	.input(
@@ -23,8 +24,14 @@ export const resetPassword = publicAction
 			verificationToken: z.string()
 		})
 	)
-	.middleware(async () => {
-		await rateLimitByIp({ limit: 3, window: 120000 })
+	.middleware(globalPOSTRateLimitMiddleware)
+	.middleware(async ({ ctx }) => {
+		if (!throttler.consume(ctx.clientIP)) {
+			throw new ActionError({
+				code: "TOO_MANY_REQUESTS",
+				message: "Too many requests"
+			})
+		}
 	})
 	.execute(async ({ input, ctx }) => {
 		const passwordFeedbackWarning = checkPasswordStrength(input.password).feedback.warning
@@ -45,8 +52,8 @@ export const resetPassword = publicAction
 			})
 		}
 
-		const tokenHash = encodeHex(
-			await sha256(new TextEncoder().encode(input.verificationToken))
+		const tokenHash = encodeHexLowerCase(
+			sha256(new TextEncoder().encode(input.verificationToken))
 		)
 
 		const token = await ctx.db.query.passwordResetTokens.findFirst({
@@ -60,7 +67,15 @@ export const resetPassword = publicAction
 			})
 		}
 
-		await lucia.invalidateUserSessions(token.userId)
+		if (!throttler.consume(token?.userId)) {
+			throw new ActionError({
+				code: "TOO_MANY_REQUESTS",
+				message: "Too many requests"
+			})
+		}
+
+		await invalidateUserSessions({ userId: token.userId })
+		deleteSessionTokenCookie()
 
 		const salt = await genSalt(10)
 		const hashedPassword = await hash(input.password, salt)
@@ -68,6 +83,8 @@ export const resetPassword = publicAction
 		await ctx.db.update(users).set({
 			passwordHash: hashedPassword
 		})
+
+		throttler.reset(token.userId)
 
 		await setSession({ userId: token.userId })
 	})

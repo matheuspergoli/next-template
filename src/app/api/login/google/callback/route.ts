@@ -3,9 +3,9 @@ import { cookies } from "next/headers"
 import { OAuth2RequestError } from "arctic"
 import { z } from "zod"
 
-import { APP_CONFIG } from "@/libs/app-config"
-import { google } from "@/libs/auth"
-import { setSession } from "@/libs/session"
+import { google, setSession } from "@/libs/auth"
+import { getIpFromRequest } from "@/libs/get-ip"
+import { globalGETRateLimit } from "@/libs/rate-limit"
 import { createUserViaGoogle } from "@/server/actions/create-user-via-google"
 import { getUserByGoogleId } from "@/server/actions/get-user-by-google-id"
 
@@ -16,6 +16,20 @@ const GoogleUser = z.object({
 })
 
 export async function GET(request: Request): Promise<Response> {
+	const clientIP = getIpFromRequest(request)
+
+	if (!clientIP) {
+		return new Response("Could not get client IP", {
+			status: 403
+		})
+	}
+
+	if (!globalGETRateLimit({ clientIP })) {
+		return new Response("Too many requests", {
+			status: 429
+		})
+	}
+
 	const url = new URL(request.url)
 	const code = url.searchParams.get("code")
 	const state = url.searchParams.get("state")
@@ -57,7 +71,7 @@ export async function GET(request: Request): Promise<Response> {
 			return new Response(null, {
 				status: 302,
 				headers: {
-					Location: APP_CONFIG.afterLoginUrl
+					Location: "/"
 				}
 			})
 		}
@@ -79,7 +93,7 @@ export async function GET(request: Request): Promise<Response> {
 		return new Response(null, {
 			status: 302,
 			headers: {
-				Location: APP_CONFIG.afterLoginUrl
+				Location: "/"
 			}
 		})
 	} catch (error) {
@@ -88,6 +102,7 @@ export async function GET(request: Request): Promise<Response> {
 				status: 400
 			})
 		}
+
 		return new Response(null, {
 			status: 500
 		})

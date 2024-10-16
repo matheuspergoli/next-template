@@ -2,7 +2,7 @@
 
 import React from "react"
 
-import type { User } from "lucia"
+import type { User } from "@/libs/auth"
 
 type UserContextType = {
 	user: User | null

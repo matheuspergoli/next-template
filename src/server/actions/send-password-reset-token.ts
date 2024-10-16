@@ -5,20 +5,29 @@ import { ActionError } from "safe-action"
 import { z } from "zod"
 
 import { env } from "@/environment/env"
-import { rateLimitByKey } from "@/libs/limiter"
+import { RefillingTokenBucket } from "@/libs/rate-limit"
 import { resend } from "@/libs/resend"
 import { getBaseUrl } from "@/libs/utils"
 import { PasswordResetEmail } from "@/shared/emails/reset-password"
 import { routes } from "@/shared/navigation/routes"
 
 import { users } from "../db/schema"
-import { publicAction } from "../root"
+import { globalPOSTRateLimitMiddleware, publicAction } from "../root"
 import { createPasswordResetToken } from "../services/create-password-reset-token"
+
+const ipBucket = new RefillingTokenBucket<string>(3, 60 * 60) // 3 requests per hour
+const userIdBucket = new RefillingTokenBucket<string>(3, 60 * 60) // 1 request per hour
 
 export const sendPasswordResetToken = publicAction
 	.input(z.object({ email: z.string() }))
-	.middleware(async ({ input }) => {
-		await rateLimitByKey({ key: input.email, window: 60000, limit: 3 })
+	.middleware(globalPOSTRateLimitMiddleware)
+	.middleware(async ({ ctx }) => {
+		if (!ipBucket.check(ctx.clientIP, 1)) {
+			throw new ActionError({
+				code: "TOO_MANY_REQUESTS",
+				message: "Too many requests"
+			})
+		}
 	})
 	.execute(async ({ input, ctx }) => {
 		const user = await ctx.db.query.users.findFirst({
@@ -29,6 +38,20 @@ export const sendPasswordResetToken = publicAction
 			throw new ActionError({
 				code: "UNAUTHORIZED",
 				message: "Invalid email address"
+			})
+		}
+
+		if (!ipBucket.consume(ctx.clientIP, 1)) {
+			throw new ActionError({
+				code: "TOO_MANY_REQUESTS",
+				message: "Too many requests"
+			})
+		}
+
+		if (!userIdBucket.consume(user.id, 1)) {
+			throw new ActionError({
+				code: "TOO_MANY_REQUESTS",
+				message: "Too many requests"
 			})
 		}
 

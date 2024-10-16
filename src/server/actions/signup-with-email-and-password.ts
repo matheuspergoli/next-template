@@ -2,16 +2,18 @@
 
 import { genSalt, hash } from "bcryptjs"
 import { eq } from "drizzle-orm"
-import { generateIdFromEntropySize } from "lucia"
 import { ActionError } from "safe-action"
 import { z } from "zod"
 
-import { rateLimitByKey } from "@/libs/limiter"
+import { setSession } from "@/libs/auth"
 import { checkPasswordLeaks, checkPasswordStrength } from "@/libs/password"
-import { setSession } from "@/libs/session"
+import { ExpiringTokenBucket } from "@/libs/rate-limit"
+import { generateRandomId } from "@/libs/utils"
 
 import { users } from "../db/schema"
-import { publicAction } from "../root"
+import { globalPOSTRateLimitMiddleware, publicAction } from "../root"
+
+const ipBucket = new ExpiringTokenBucket<string>(5, 60 * 60) // 5 requests per hour
 
 export const signupWithEmailAndPassword = publicAction
 	.input(
@@ -21,8 +23,14 @@ export const signupWithEmailAndPassword = publicAction
 			password: z.string().min(6).max(255)
 		})
 	)
-	.middleware(async ({ input }) => {
-		await rateLimitByKey({ key: input.email, window: 30000, limit: 5 })
+	.middleware(globalPOSTRateLimitMiddleware)
+	.middleware(async ({ ctx }) => {
+		if (!ipBucket.check(ctx.clientIP, 1)) {
+			throw new ActionError({
+				code: "TOO_MANY_REQUESTS",
+				message: "Too many requests"
+			})
+		}
 	})
 	.execute(async ({ ctx, input }) => {
 		const existingUser = await ctx.db.query.users.findFirst({
@@ -54,7 +62,7 @@ export const signupWithEmailAndPassword = publicAction
 			})
 		}
 
-		const userId = generateIdFromEntropySize(10)
+		const userId = generateRandomId()
 		const salt = await genSalt(10)
 		const hashedPassword = await hash(input.password, salt)
 
@@ -77,5 +85,12 @@ export const signupWithEmailAndPassword = publicAction
 			})
 		}
 
-		await setSession({ userId })
+		if (!ipBucket.consume(ctx.clientIP, 1)) {
+			throw new ActionError({
+				code: "TOO_MANY_REQUESTS",
+				message: "Too many requests"
+			})
+		}
+
+		await setSession({ userId: user.id })
 	})

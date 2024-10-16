@@ -1,7 +1,9 @@
 import { v2 as cloudinary } from "cloudinary"
 
 import { env } from "@/environment/env"
-import { MAX_UPLOAD_IMAGE_SIZE } from "@/libs/app-config"
+
+export const MAX_UPLOAD_IMAGE_SIZE_IN_MB = 5
+export const MAX_UPLOAD_IMAGE_SIZE = 1024 * 1024 * MAX_UPLOAD_IMAGE_SIZE_IN_MB
 
 cloudinary.config({
 	api_key: env.CLOUDINARY_API_KEY,
