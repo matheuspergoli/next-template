@@ -23,10 +23,10 @@ export const users = sqliteTable("users", {
 	email: text("email").unique().notNull(),
 	role: roles("role").notNull().default("user"),
 	emailVerified: integer("email_verified", { mode: "boolean" }).notNull().default(false),
-	createdAt: integer("created_at", { mode: "timestamp" })
+	createdAt: integer("created_at", { mode: "timestamp_ms" })
 		.notNull()
 		.default(sql`(CURRENT_TIMESTAMP)`),
-	updatedAt: integer("updated_at", { mode: "timestamp" })
+	updatedAt: integer("updated_at", { mode: "timestamp_ms" })
 		.notNull()
 		.default(sql`(CURRENT_TIMESTAMP)`)
 		.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`)
@@ -46,10 +46,10 @@ export const oauthAccounts = sqliteTable(
 		userId: text("user_id")
 			.notNull()
 			.references(() => users.id, { onDelete: "cascade" }),
-		createdAt: integer("created_at", { mode: "timestamp" })
+		createdAt: integer("created_at", { mode: "timestamp_ms" })
 			.notNull()
 			.default(sql`(CURRENT_TIMESTAMP)`),
-		updatedAt: integer("updated_at", { mode: "timestamp" })
+		updatedAt: integer("updated_at", { mode: "timestamp_ms" })
 			.notNull()
 			.default(sql`(CURRENT_TIMESTAMP)`)
 			.$onUpdate(() => sql`(CURRENT_TIMESTAMP)`)
@@ -66,13 +66,13 @@ export const emailVerificationCodes = sqliteTable("email_verification_codes", {
 	email: text("email").notNull(),
 	userId: text("user_id").notNull(),
 	code: text("code").unique().notNull(),
-	expiresAt: integer("expires_at", { mode: "timestamp" }).notNull()
+	expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull()
 })
 
 export const passwordResetTokens = sqliteTable("password_reset_tokens", {
 	userId: text("user_id").notNull(),
 	tokenHash: text("token_hash").unique().notNull(),
-	expiresAt: integer("expires_at", { mode: "timestamp" }).notNull()
+	expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull()
 })
 
 export const sessions = sqliteTable("sessions", {
@@ -80,5 +80,5 @@ export const sessions = sqliteTable("sessions", {
 	userId: text("user_id")
 		.notNull()
 		.references(() => users.id, { onDelete: "cascade" }),
-	expiresAt: integer("expires_at", { mode: "timestamp" }).notNull()
+	expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull()
 })
