@@ -10,7 +10,7 @@ import { checkPasswordLeaks, checkPasswordStrength, hashPassword } from "@/libs/
 import { usersTable } from "../db/schema"
 import { publicAction } from "../root"
 
-export const signupWithEmailAndPassword = publicAction
+export const signup = publicAction
 	.input(
 		z.object({
 			email: z.string().email(),
