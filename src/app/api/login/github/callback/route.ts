@@ -1,18 +1,17 @@
 import { cookies } from "next/headers"
 
 import { OAuth2RequestError } from "arctic"
+import { eq } from "drizzle-orm"
 import { z } from "zod"
 
 import { github, setSession } from "@/libs/auth"
 import { getIpFromRequest } from "@/libs/get-ip"
-import { globalGETRateLimit } from "@/libs/rate-limit"
-import { createUserViaGithub } from "@/server/actions/create-user-via-github"
-import { getUserByGithubId } from "@/server/actions/get-user-by-github-id"
+import { db } from "@/server/db/client"
+import { oauthAccountsTable, usersTable } from "@/server/db/schema"
 
 const GithubUser = z.object({
 	id: z.number(),
 	login: z.string(),
-	avatar_url: z.string(),
 	email: z.string().email()
 })
 
@@ -25,16 +24,11 @@ export async function GET(request: Request): Promise<Response> {
 		})
 	}
 
-	if (!globalGETRateLimit({ clientIP })) {
-		return new Response("Too many requests", {
-			status: 429
-		})
-	}
-
+	const coks = await cookies()
 	const url = new URL(request.url)
 	const code = url.searchParams.get("code")
 	const state = url.searchParams.get("state")
-	const storedState = cookies().get("github_oauth_state")?.value ?? null
+	const storedState = coks.get("github_oauth_state")?.value ?? null
 
 	if (!code || !state || !storedState || state !== storedState) {
 		return new Response(null, {
@@ -50,6 +44,7 @@ export async function GET(request: Request): Promise<Response> {
 				Authorization: `Bearer ${tokens.accessToken}`
 			}
 		})
+
 		const githubUserUnparsed = await githubUserResponse.json()
 		const githubUserParsed = GithubUser.safeParse(githubUserUnparsed)
 
@@ -62,9 +57,17 @@ export async function GET(request: Request): Promise<Response> {
 
 		const githubUser = githubUserParsed.data
 
-		const { data: existingGithubUser } = await getUserByGithubId({
-			githubId: githubUser.id.toString()
-		})
+		const existingGithubUser = await db
+			.select({
+				id: usersTable.id,
+				username: usersTable.username,
+				email: usersTable.email
+			})
+			.from(usersTable)
+			.innerJoin(oauthAccountsTable, eq(usersTable.id, oauthAccountsTable.userId))
+			.where(eq(oauthAccountsTable.providerUserId, githubUser.id.toString()))
+			.limit(1)
+			.then((res) => res[0] ?? null)
 
 		if (existingGithubUser) {
 			await setSession({ userId: existingGithubUser.id })
@@ -76,15 +79,36 @@ export async function GET(request: Request): Promise<Response> {
 			})
 		}
 
-		const { data: newGithubUser } = await createUserViaGithub({
-			username: githubUser.login,
-			email: githubUser.email,
-			githubId: Number(githubUser.id)
-		})
+		const newGithubUser = await db
+			.insert(usersTable)
+			.values({
+				email: githubUser.email,
+				username: githubUser.login
+			})
+			.returning()
+			.then((res) => res[0] ?? null)
 
 		if (!newGithubUser) {
 			return new Response(null, {
-				status: 400
+				status: 500,
+				statusText: "Error creating github user"
+			})
+		}
+
+		const newOauthAccount = await db
+			.insert(oauthAccountsTable)
+			.values({
+				providerId: "github",
+				providerUserId: githubUser.id.toString(),
+				userId: newGithubUser.id
+			})
+			.returning()
+			.then((res) => res[0] ?? null)
+
+		if (!newOauthAccount) {
+			return new Response(null, {
+				status: 500,
+				statusText: "Error creating github oauth account"
 			})
 		}
 

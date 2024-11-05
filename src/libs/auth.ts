@@ -8,17 +8,19 @@ import { eq } from "drizzle-orm"
 
 import { env } from "@/environment/env"
 import { db } from "@/server/db/client"
-import { sessions, users } from "@/server/db/schema"
+import {
+	sessionsTable,
+	usersTable,
+	type SessionSelect,
+	type UserSelect
+} from "@/server/db/schema"
 
 import { createDate, isWithinExpirationDate, TimeSpan } from "./time-span"
 import { getBaseUrl } from "./utils"
 
-export type Session = typeof sessions.$inferSelect
+export type Session = SessionSelect
 
-export type User = Omit<
-	typeof users.$inferSelect,
-	"passwordHash" | "createdAt" | "updatedAt"
->
+export type User = Omit<UserSelect, "passwordHash">
 
 type SessionValidationResult =
 	| {
@@ -26,8 +28,8 @@ type SessionValidationResult =
 			user: User
 	  }
 	| {
-			session: null
-			user: null
+			session: undefined
+			user: undefined
 	  }
 
 export const generateSessionToken = () => {
@@ -46,7 +48,7 @@ export const createSession = async ({
 }): Promise<Session> => {
 	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)))
 
-	const sessionDuration = new TimeSpan(30, "d") // 30 days
+	const sessionDuration = new TimeSpan(30, "d")
 
 	const session: Session = {
 		id: sessionId,
@@ -54,7 +56,8 @@ export const createSession = async ({
 		expiresAt: new Date(Date.now() + sessionDuration.milliseconds())
 	}
 
-	await db.insert(sessions).values(session)
+	await db.delete(sessionsTable).where(eq(sessionsTable.id, sessionId))
+	await db.insert(sessionsTable).values(session)
 
 	return session
 }
@@ -64,72 +67,77 @@ export const validateSessionToken = async ({
 }: {
 	token: string
 }): Promise<SessionValidationResult> => {
-	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)))
-
-	const result = await db
-		.select({
-			user: users,
-			session: sessions
-		})
-		.from(sessions)
-		.innerJoin(users, eq(sessions.userId, users.id))
-		.where(eq(sessions.id, sessionId))
-		.get()
-
-	if (!result) {
-		return { user: null, session: null }
+	if (!token) {
+		return { user: undefined, session: undefined }
 	}
 
-	const {
-		user: {
-			updatedAt: _updatedAt,
-			createdAt: _createdAt,
-			passwordHash: _passwordhash,
-			...user
-		},
-		session
-	} = result
+	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)))
 
-	const sessionDuration = new TimeSpan(30, "d") // 30 days
-	const renewalThreshold = new TimeSpan(15, "d") // 15 days
+	const session = await db
+		.select()
+		.from(sessionsTable)
+		.where(eq(sessionsTable.id, sessionId))
+		.get()
+
+	if (!session) {
+		return { user: undefined, session: undefined }
+	}
+
+	const user = await db
+		.select()
+		.from(usersTable)
+		.where(eq(usersTable.id, session.userId))
+		.get()
+
+	if (!user) {
+		await invalidateSession({ sessionId })
+		return { user: undefined, session: undefined }
+	}
+
+	const { passwordHash: _passwordHash, ...userWithoutPassword } = user
+
+	const sessionDuration = new TimeSpan(30, "d")
+	const renewalThreshold = new TimeSpan(15, "d")
 
 	if (!isWithinExpirationDate(session.expiresAt)) {
-		await db.delete(sessions).where(eq(sessions.id, sessionId))
+		await db.delete(sessionsTable).where(eq(sessionsTable.id, sessionId))
 
-		return { user: null, session: null }
+		return { user: undefined, session: undefined }
 	}
 
 	if (Date.now() >= session.expiresAt.getTime() - renewalThreshold.milliseconds()) {
-		session.expiresAt = createDate(sessionDuration)
+		const newExpiresAt = createDate(sessionDuration)
 
 		await db
-			.update(sessions)
-			.set({
-				expiresAt: session.expiresAt
-			})
-			.where(eq(sessions.id, sessionId))
+			.update(sessionsTable)
+			.set({ expiresAt: newExpiresAt })
+			.where(eq(sessionsTable.id, sessionId))
 			.execute()
+
+		session.expiresAt = newExpiresAt
 	}
 
-	return { user, session }
+	return { user: userWithoutPassword, session }
 }
 
 export const invalidateSession = async ({ sessionId }: { sessionId: string }) => {
-	await db.delete(sessions).where(eq(sessions.id, sessionId))
+	await db.delete(sessionsTable).where(eq(sessionsTable.id, sessionId))
 }
 
 export const invalidateUserSessions = async ({ userId }: { userId: string }) => {
-	await db.delete(sessions).where(eq(sessions.userId, userId))
+	await db.delete(sessionsTable).where(eq(sessionsTable.userId, userId))
 }
 
-export const setSessionTokenCookie = ({
+export const setSessionTokenCookie = async ({
 	token,
 	expiresAt
 }: {
 	token: string
 	expiresAt: Date
 }) => {
-	cookies().set("session", token, {
+	const cooks = await cookies()
+
+	cooks.set("session", token, {
 		httpOnly: true,
 		path: "/",
 		secure: env.NODE_ENV === "production",
@@ -138,8 +146,10 @@ export const setSessionTokenCookie = ({
 	})
 }
 
-export const deleteSessionTokenCookie = () => {
-	cookies().set("session", "", {
+export const deleteSessionTokenCookie = async () => {
+	const cooks = await cookies()
+
+	cooks.set("session", "", {
 		httpOnly: true,
 		path: "/",
 		secure: env.NODE_ENV === "production",
@@ -149,44 +159,56 @@ export const deleteSessionTokenCookie = () => {
 }
 
 export const getCurrentSession = cache(async () => {
-	const token = cookies().get("session")?.value ?? null
+	const cooks = await cookies()
+	const token = cooks.get("session")?.value ?? null
 
 	if (token === null) {
-		return null
+		return undefined
 	}
 
 	const { session } = await validateSessionToken({ token })
 
 	if (!session) {
-		return null
+		await deleteSessionTokenCookie()
+		return undefined
 	}
 
 	return session
 })
 
 export const getCurrentUser = cache(async () => {
-	const token = cookies().get("session")?.value ?? null
+	const cooks = await cookies()
+	const token = cooks.get("session")?.value ?? null
+
 	if (token === null) {
-		return null
+		return undefined
 	}
 
 	const { user } = await validateSessionToken({ token })
 
 	if (!user) {
-		return null
+		await deleteSessionTokenCookie()
+		return undefined
 	}
 
 	return user
 })
 
 export const setSession = async ({ userId }: { userId: string }) => {
+	await invalidateUserSessions({ userId })
+	await deleteSessionTokenCookie()
+
 	const token = generateSessionToken()
 	const session = await createSession({ token, userId })
+
+	if (!session) {
+		throw new Error("Failed to create session")
+	}
 
 	setSessionTokenCookie({ token, expiresAt: session.expiresAt })
 }
 
-export const github = new GitHub(env.GITHUB_CLIENT_ID, env.GITHUB_CLIENT_SECRET)
+export const github = new GitHub(env.GITHUB_CLIENT_ID, env.GITHUB_CLIENT_SECRET, null)
 
 export const google = new Google(
 	env.GOOGLE_CLIENT_ID,

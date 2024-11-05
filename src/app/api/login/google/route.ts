@@ -4,7 +4,6 @@ import { generateCodeVerifier, generateState } from "arctic"
 
 import { google } from "@/libs/auth"
 import { getIpFromRequest } from "@/libs/get-ip"
-import { globalGETRateLimit } from "@/libs/rate-limit"
 
 export async function GET(request: Request): Promise<Response> {
 	const clientIP = getIpFromRequest(request)
@@ -15,30 +14,25 @@ export async function GET(request: Request): Promise<Response> {
 		})
 	}
 
-	if (!globalGETRateLimit({ clientIP })) {
-		return new Response("Too many requests", {
-			status: 429
-		})
-	}
-
+	const coks = await cookies()
 	const state = generateState()
 	const codeVerifier = generateCodeVerifier()
-	const url = await google.createAuthorizationURL(state, codeVerifier, {
-		scopes: ["profile", "email"]
-	})
+	const url = google.createAuthorizationURL(state, codeVerifier, ["profile", "email"])
 
-	cookies().set("google_oauth_state", state, {
+	coks.set("google_oauth_state", state, {
 		secure: true,
 		path: "/",
 		httpOnly: true,
-		maxAge: 60 * 10
+		maxAge: 60 * 10,
+		sameSite: "lax"
 	})
 
-	cookies().set("google_code_verifier", codeVerifier, {
+	coks.set("google_code_verifier", codeVerifier, {
 		secure: true,
 		path: "/",
 		httpOnly: true,
-		maxAge: 60 * 10
+		maxAge: 60 * 10,
+		sameSite: "lax"
 	})
 
 	return Response.redirect(url)

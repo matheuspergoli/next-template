@@ -5,10 +5,9 @@ import "../styles/globals.css"
 import { getCurrentUser } from "@/libs/auth"
 import { ThemeProvider } from "@/shared/providers/theme-provider"
 import { UserProvider } from "@/shared/providers/user-provider"
-import { Toaster } from "@/shared/ui/sonner"
 
 export const metadata: Metadata = {
-	title: "Next.js 14 App Router Template",
+	title: "Next.js 15 App Router Template",
 	description: "Created by Matheus Pergoli"
 }
 
@@ -28,10 +27,7 @@ export default function RootLayout({
 		<html lang="en" suppressHydrationWarning>
 			<body>
 				<ThemeProvider>
-					<UserProvider userPromise={userPromise}>
-						{children}
-						<Toaster />
-					</UserProvider>
+					<UserProvider userPromise={userPromise}>{children}</UserProvider>
 				</ThemeProvider>
 			</body>
 		</html>

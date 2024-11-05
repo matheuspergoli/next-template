@@ -2,14 +2,13 @@ import "server-only"
 
 import { ActionError, CreateAction } from "safe-action"
 
-import { getCurrentUser } from "@/libs/auth"
+import { getCurrentSession, getCurrentUser } from "@/libs/auth"
 import { getIp } from "@/libs/get-ip"
-import { globalPOSTRateLimit } from "@/libs/rate-limit"
 
 import { db } from "./db/client"
 
-const context = () => {
-	const clientIP = getIp()
+const context = async () => {
+	const clientIP = await getIp()
 
 	return {
 		db,
@@ -27,34 +26,20 @@ const action = CreateAction.context(context).client({
 
 export const createActionMiddleware = action.middleware
 
-export const globalPOSTRateLimitMiddleware = createActionMiddleware(({ ctx, next }) => {
+export const publicAction = action.create
+
+export const authedAction = publicAction.middleware(async ({ next, ctx }) => {
 	if (!ctx.clientIP) {
 		throw new ActionError({
 			code: "FORBIDDEN",
-			message: "Could not get client IP"
+			message: "Client IP missing"
 		})
 	}
 
-	if (!globalPOSTRateLimit({ clientIP: ctx.clientIP })) {
-		throw new ActionError({
-			code: "TOO_MANY_REQUESTS",
-			message: "Too many requests"
-		})
-	}
-
-	return next({
-		ctx: {
-			clientIP: ctx.clientIP
-		}
-	})
-})
-
-export const publicAction = action.create
-
-export const authedAction = publicAction.middleware(async ({ next }) => {
 	const user = await getCurrentUser()
+	const session = await getCurrentSession()
 
-	if (!user?.id) {
+	if (!user?.id || !session?.userId) {
 		throw new ActionError({
 			code: "UNAUTHORIZED",
 			message: "You are not authorized to perform this action"
@@ -63,7 +48,9 @@ export const authedAction = publicAction.middleware(async ({ next }) => {
 
 	return next({
 		ctx: {
-			user
+			user,
+			session,
+			clientIP: ctx.clientIP
 		}
 	})
 })

@@ -1,32 +1,10 @@
 "use server"
 
-import { redirect } from "next/navigation"
+import { deleteSessionTokenCookie, invalidateSession } from "@/libs/auth"
 
-import { ActionError } from "safe-action"
+import { authedAction } from "../root"
 
-import {
-	deleteSessionTokenCookie,
-	getCurrentSession,
-	invalidateSession
-} from "@/libs/auth"
-import { routes } from "@/shared/navigation/routes"
-
-import { globalPOSTRateLimitMiddleware, publicAction } from "../root"
-
-export const logout = publicAction
-	.middleware(globalPOSTRateLimitMiddleware)
-	.execute(async () => {
-		const session = await getCurrentSession()
-
-		if (!session) {
-			throw new ActionError({
-				code: "UNAUTHORIZED",
-				message: "No session found"
-			})
-		}
-
-		await invalidateSession({ sessionId: session.id })
-		deleteSessionTokenCookie()
-
-		redirect(routes.home())
-	})
+export const logout = authedAction.execute(async ({ ctx }) => {
+	await invalidateSession({ sessionId: ctx.session.id })
+	await deleteSessionTokenCookie()
+})

@@ -4,7 +4,6 @@ import { generateState } from "arctic"
 
 import { github } from "@/libs/auth"
 import { getIpFromRequest } from "@/libs/get-ip"
-import { globalGETRateLimit } from "@/libs/rate-limit"
 
 export async function GET(request: Request): Promise<Response> {
 	const clientIP = getIpFromRequest(request)
@@ -15,18 +14,11 @@ export async function GET(request: Request): Promise<Response> {
 		})
 	}
 
-	if (!globalGETRateLimit({ clientIP })) {
-		return new Response("Too many requests", {
-			status: 429
-		})
-	}
-
+	const coks = await cookies()
 	const state = generateState()
-	const url = await github.createAuthorizationURL(state, {
-		scopes: ["user:email"]
-	})
+	const url = github.createAuthorizationURL(state, ["user:email"])
 
-	cookies().set("github_oauth_state", state, {
+	coks.set("github_oauth_state", state, {
 		path: "/",
 		secure: process.env.NODE_ENV === "production",
 		httpOnly: true,
