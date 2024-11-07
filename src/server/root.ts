@@ -1,5 +1,3 @@
-import "server-only"
-
 import { ActionError, CreateAction } from "safe-action"
 
 import { getCurrentSession, getCurrentUser } from "@/libs/auth"
