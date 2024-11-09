@@ -3,7 +3,6 @@ import { cookies } from "next/headers"
 
 import { sha256 } from "@oslojs/crypto/sha2"
 import { encodeBase32LowerCaseNoPadding, encodeHexLowerCase } from "@oslojs/encoding"
-import { GitHub, Google } from "arctic"
 import { eq } from "drizzle-orm"
 
 import { env } from "@/environment/env"
@@ -16,7 +15,6 @@ import {
 } from "@/server/db/schema"
 
 import { createDate, isWithinExpirationDate, TimeSpan } from "./time-span"
-import { getBaseUrl } from "./utils"
 
 export type Session = SessionSelect
 
@@ -45,7 +43,7 @@ export const createSession = async ({
 }: {
 	token: string
 	userId: string
-}): Promise<Session> => {
+}) => {
 	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)))
 
 	const sessionDuration = new TimeSpan(30, "d")
@@ -135,9 +133,9 @@ export const setSessionTokenCookie = async ({
 	token: string
 	expiresAt: Date
 }) => {
-	const cooks = await cookies()
+	const cookieStore = await cookies()
 
-	cooks.set("session", token, {
+	cookieStore.set("session", token, {
 		httpOnly: true,
 		path: "/",
 		secure: env.NODE_ENV === "production",
@@ -147,9 +145,9 @@ export const setSessionTokenCookie = async ({
 }
 
 export const deleteSessionTokenCookie = async () => {
-	const cooks = await cookies()
+	const cookieStore = await cookies()
 
-	cooks.set("session", "", {
+	cookieStore.set("session", "", {
 		httpOnly: true,
 		path: "/",
 		secure: env.NODE_ENV === "production",
@@ -159,8 +157,8 @@ export const deleteSessionTokenCookie = async () => {
 }
 
 export const getCurrentSession = cache(async () => {
-	const cooks = await cookies()
-	const token = cooks.get("session")?.value ?? null
+	const cookieStore = await cookies()
+	const token = cookieStore.get("session")?.value ?? null
 
 	if (token === null) {
 		return undefined
@@ -177,8 +175,8 @@ export const getCurrentSession = cache(async () => {
 })
 
 export const getCurrentUser = cache(async () => {
-	const cooks = await cookies()
-	const token = cooks.get("session")?.value ?? null
+	const cookieStore = await cookies()
+	const token = cookieStore.get("session")?.value ?? null
 
 	if (token === null) {
 		return undefined
@@ -205,13 +203,5 @@ export const setSession = async ({ userId }: { userId: string }) => {
 		throw new Error("Failed to create session")
 	}
 
-	setSessionTokenCookie({ token, expiresAt: session.expiresAt })
+	await setSessionTokenCookie({ token, expiresAt: session.expiresAt })
 }
-
-export const github = new GitHub(env.GITHUB_CLIENT_ID, env.GITHUB_CLIENT_SECRET, null)
-
-export const google = new Google(
-	env.GOOGLE_CLIENT_ID,
-	env.GOOGLE_CLIENT_SECRET,
-	`${getBaseUrl()}/api/login/google/callback`
-)

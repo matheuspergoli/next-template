@@ -15,7 +15,7 @@ interface ActiveLinkProps extends LinkProps {
 export const ActiveLink = React.forwardRef<HTMLAnchorElement, ActiveLinkProps>(
 	({ href, className, ...rest }, ref) => {
 		const pathname = usePathname()
-		const isActive = pathname === href.toString()
+		const isActive = pathname === (typeof href === "string" ? href : href.pathname)
 		const variant: ButtonProps["variant"] = isActive ? "default" : "ghost"
 
 		return (

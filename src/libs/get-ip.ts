@@ -14,7 +14,7 @@ export const getIp = async () => {
 		return realIp.trim()
 	}
 
-	return null
+	return undefined
 }
 
 export const getIpFromRequest = (request: Request) => {
@@ -29,5 +29,5 @@ export const getIpFromRequest = (request: Request) => {
 		return realIp.trim()
 	}
 
-	return null
+	return undefined
 }

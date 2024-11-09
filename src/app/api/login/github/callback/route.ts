@@ -4,8 +4,9 @@ import { OAuth2RequestError } from "arctic"
 import { eq } from "drizzle-orm"
 import { z } from "zod"
 
-import { github, setSession } from "@/libs/auth"
 import { getIpFromRequest } from "@/libs/get-ip"
+import { github } from "@/libs/oauth"
+import { setSession } from "@/libs/session"
 import { db } from "@/server/db/client"
 import { oauthAccountsTable, usersTable } from "@/server/db/schema"
 
@@ -41,7 +42,7 @@ export async function GET(request: Request): Promise<Response> {
 		const tokens = await github.validateAuthorizationCode(code)
 		const githubUserResponse = await fetch(oauthUrl, {
 			headers: {
-				Authorization: `Bearer ${tokens.accessToken}`
+				Authorization: `Bearer ${tokens.accessToken()}`
 			}
 		})
 

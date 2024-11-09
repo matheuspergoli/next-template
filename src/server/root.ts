@@ -1,54 +1,19 @@
-import { ActionError, CreateAction } from "safe-action"
+import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server"
 
-import { getCurrentSession, getCurrentUser } from "@/libs/auth"
-import { getIp } from "@/libs/get-ip"
+import { createCallerFactory, createTRPCRouter } from "@/server/trpc"
 
-import { db } from "./db/client"
+import { authRouter } from "./routers/auth"
+import { exampleRouter } from "./routers/example"
+import { userRouter } from "./routers/user"
 
-const context = async () => {
-	const clientIP = await getIp()
-
-	return {
-		db,
-		clientIP
-	}
-}
-
-const action = CreateAction.context(context).client({
-	errorHandler: (error) => {
-		if (error.code !== "NEXT_ERROR") {
-			console.log("ActionError", error)
-		}
-	}
+export const appRouter = createTRPCRouter({
+	auth: authRouter,
+	user: userRouter,
+	example: exampleRouter
 })
 
-export const createActionMiddleware = action.middleware
+export type AppRouter = typeof appRouter
+export type RouterInputs = inferRouterInputs<AppRouter>
+export type RouterOutputs = inferRouterOutputs<AppRouter>
 
-export const publicAction = action.create
-
-export const authedAction = publicAction.middleware(async ({ next, ctx }) => {
-	if (!ctx.clientIP) {
-		throw new ActionError({
-			code: "FORBIDDEN",
-			message: "Client IP missing"
-		})
-	}
-
-	const user = await getCurrentUser()
-	const session = await getCurrentSession()
-
-	if (!user?.id || !session?.userId) {
-		throw new ActionError({
-			code: "UNAUTHORIZED",
-			message: "You are not authorized to perform this action"
-		})
-	}
-
-	return next({
-		ctx: {
-			user,
-			session,
-			clientIP: ctx.clientIP
-		}
-	})
-})
+export const createCaller = createCallerFactory(appRouter)

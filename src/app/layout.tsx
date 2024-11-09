@@ -2,9 +2,8 @@ import type { Metadata, Viewport } from "next"
 
 import "../styles/globals.css"
 
-import { getCurrentUser } from "@/libs/auth"
 import { ThemeProvider } from "@/shared/providers/theme-provider"
-import { UserProvider } from "@/shared/providers/user-provider"
+import { TRPCReactProvider } from "@/shared/trpc/client"
 
 export const metadata: Metadata = {
 	title: "Next.js 15 App Router Template",
@@ -21,13 +20,11 @@ export default function RootLayout({
 }: Readonly<{
 	children: React.ReactNode
 }>) {
-	const userPromise = getCurrentUser()
-
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<body>
 				<ThemeProvider>
-					<UserProvider userPromise={userPromise}>{children}</UserProvider>
+					<TRPCReactProvider>{children}</TRPCReactProvider>
 				</ThemeProvider>
 			</body>
 		</html>

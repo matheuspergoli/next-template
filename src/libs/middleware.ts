@@ -11,7 +11,7 @@ type MiddlewareMap = Record<string, NextMiddleware | NextMiddleware[]>
 export const createMiddleware = (mode: Mode, pathMiddlewareMap: MiddlewareMap) => {
 	if (mode !== "parallel" && mode !== "sequence") {
 		throw new Error(
-			`Invalid createMiddleware mode: expected "parallel" or "sequence" but got [${mode}] instead.`
+			`Invalid createMiddleware mode: expected "parallel" or "sequence" but got [${mode as string}] instead.`
 		)
 	}
 
