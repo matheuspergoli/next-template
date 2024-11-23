@@ -3,7 +3,7 @@ import { cookies } from "next/headers"
 import { generateState } from "arctic"
 
 import { getIpFromRequest } from "@/libs/get-ip"
-import { github } from "@/libs/oauth"
+import { github } from "@/server/services/oauth"
 
 export async function GET(request: Request): Promise<Response> {
 	const clientIP = getIpFromRequest(request)

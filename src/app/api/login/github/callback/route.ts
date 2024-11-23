@@ -5,10 +5,10 @@ import { eq } from "drizzle-orm"
 import { z } from "zod"
 
 import { getIpFromRequest } from "@/libs/get-ip"
-import { github } from "@/libs/oauth"
-import { setSession } from "@/libs/session"
 import { db } from "@/server/db/client"
 import { oauthAccountsTable, usersTable } from "@/server/db/schema"
+import { github } from "@/server/services/oauth"
+import { setSession } from "@/server/services/session"
 
 const GithubUser = z.object({
 	id: z.number(),
@@ -61,7 +61,6 @@ export async function GET(request: Request): Promise<Response> {
 		const existingGithubUser = await db
 			.select({
 				id: usersTable.id,
-				username: usersTable.username,
 				email: usersTable.email
 			})
 			.from(usersTable)
@@ -83,8 +82,7 @@ export async function GET(request: Request): Promise<Response> {
 		const newGithubUser = await db
 			.insert(usersTable)
 			.values({
-				email: githubUser.email,
-				username: githubUser.login
+				email: githubUser.email
 			})
 			.returning()
 			.then((res) => res[0] ?? null)

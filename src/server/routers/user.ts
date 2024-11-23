@@ -3,8 +3,7 @@ import {
 	getCurrentSession,
 	getCurrentUser,
 	invalidateSession
-} from "@/libs/session"
-
+} from "../services/session"
 import { authedProcedure, createTRPCRouter, publicProcedure } from "../trpc"
 
 export const userRouter = createTRPCRouter({

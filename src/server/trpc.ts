@@ -2,9 +2,8 @@ import { initTRPC, TRPCError } from "@trpc/server"
 import SuperJSON from "superjson"
 import { ZodError } from "zod"
 
-import { getCurrentSession, getCurrentUser } from "@/libs/session"
-
 import { db } from "./db/client"
+import { getCurrentSession, getCurrentUser } from "./services/session"
 
 interface Context {
 	headers: Headers
@@ -53,8 +52,7 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 export const publicProcedure = t.procedure.use(timingMiddleware)
 
 export const authedProcedure = publicProcedure.use(async ({ next }) => {
-	const user = await getCurrentUser()
-	const session = await getCurrentSession()
+	const [user, session] = await Promise.all([getCurrentUser(), getCurrentSession()])
 
 	if (!user?.id || !session?.userId) {
 		throw new TRPCError({

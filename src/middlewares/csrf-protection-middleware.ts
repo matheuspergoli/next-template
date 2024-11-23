@@ -5,7 +5,7 @@ import { TimeSpan } from "@/libs/time-span"
 
 export const CSRFProtectionMiddleware = (request: NextRequest) => {
 	if (request.method === "GET") {
-		const maxAge = new TimeSpan(30, "d") // 30 days
+		const maxAge = new TimeSpan(30, "d")
 
 		const response = NextResponse.next()
 		const token = request.cookies.get("session")?.value ?? null
